@@ -1,0 +1,42 @@
+---
+title: "ConsumerComplaintDatabase"
+author: "mspcvsp"
+date: "04/04/2015"
+output: html_document
+---
+library(caret)
+
+
+```{r downloadData}
+fileURL <- paste0('https://data.consumerfinance.gov/api/views',
+                  '/x94z-ydhh/rows.csv?accessType=DOWNLOAD')
+
+if (is.na(file.info("./Data")[1,"isdir"])) {
+    dir.create("./Data")
+    
+  download.file(fileURL, destfile="./Data/rows.csv", method="curl")
+}
+
+complaintData <- read.csv("./Data/rows.csv",
+                          header=TRUE,
+                          stringsAsFactors=FALSE)
+
+complaintData <- complaintData[which(complaintData$issue != ""),]
+
+colnames(complaintData) <- tolower(colnames(complaintData))
+
+colnames(complaintData) <- gsub('\\.','',colnames(complaintData))
+
+complaintData$product <- tolower(complaintData$product)
+complaintData$product <- gsub('\\s+','',complaintData$product)
+
+complaintIssue <- unique(complaintData$issue)
+
+debtCollection <- [complaintIssue[1],]
+```
+
+# http://stackoverflow.com/questions/13610074/is-there-a-rule-of-thumb-for-how-to-divide-a-dataset-into-training-and-validatio
+
+```{r, echo=FALSE}
+plot(cars)
+```
