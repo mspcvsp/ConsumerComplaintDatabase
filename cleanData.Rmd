@@ -48,6 +48,11 @@ complaintData$issue <- sub("\\s\\s+"," ",complaintData$issue)
 # Aggregate complaint issues
 categorySelection <- initializeIssueCategorySelection(complaintData)
 
+complaintData$issuecategory <- NA
+for (category in names(categorySelection)) {
+    complaintData[categorySelection[[category]],"issuecategory"] <- category
+}
+
 findUncategorizedIssues(categorySelection, complaintData)
 ```
 # http://stackoverflow.com/questions/13610074/is-there-a-rule-of-thumb-for-how-to-divide-a-dataset-into-training-and-validatio
