@@ -1,6 +1,7 @@
-loadComplainData <- function(csvFilePath) {
+loadComplaintData <- function(csvFilePath,
+                              maximumPercentMissing) {
 
-    complaintData <- read.csv("./Data/rows.csv",
+    complaintData <- read.csv(csvFilePath,
                               header=TRUE,
                               stringsAsFactors=FALSE)
     
@@ -35,21 +36,71 @@ loadComplainData <- function(csvFilePath) {
                 # Remove punctuation
                 # http://www.regular-expressions.info/posixbrackets.html
                 complaintData[,variable] <-
-                    sub("[[:punct:]]", " ", complaintData[,variable])
+                    gsub("[[:punct:]]", " ", complaintData[,variable])
                 
                 # http://stackoverflow.com/questions/1981349/
                 #   regex-to-replace-multiple-spaces-with-a-single-space
                 complaintData[,variable] <-
-                    sub("\\s\\s+"," ",complaintData[,variable])
+                    gsub("\\s\\s+"," ",complaintData[,variable])
             }
         }
-    }    
+    }
+    
+    # Remove white space from company type
+    complaintData$company <- gsub("p\\sc","pc",complaintData$company)
+    complaintData$company <- gsub("l\\sl\\sc","llc",complaintData$company)
+    
+    # Initialize complaint issue category
+    categorySelection <- initializeIssueCategorySelection(complaintData)
+
+    complaintData$issuecategory <- NA
+    for (category in names(categorySelection)) {
+        complaintData[categorySelection[[category]],"issuecategory"] <-
+            tolower(category)
+    }
+
+    # Append city, state, latitude, & lognitude to consumer complaint database 
+    data(zipcode)
+    colnames(zipcode) <- c("zipcode","city","state","latitude","longitude")
+    zipcode$zipcode <- as.integer(zipcode$zipcode)
+    complaintData$state <- toupper(complaintData$state)
+    
+    # http://www.rstudio.com/wp-content/uploads/2015/02/
+    #   data-wrangling-cheatsheet.pdf
+    complaintData <- dplyr::left_join(complaintData,
+                                      zipcode,
+                                      by=c("zipcode","state"))
+    
+    percentMissingData$dataframejoin <-
+        100 * (1.0 - sum(complete.cases(complaintData)) /
+                     nrow(complaintData))
+
+    complaintData <- complaintData[complete.cases(complaintData),]
+
+    # Anomonize the company names
+    #
+    # http://stackoverflow.com/questions/8214303/
+    #   conditional-replacement-of-values-in-a-data-frame
+    company <- unique(complaintData$company)
+    numberCompanies <- length(company)
+    
+    for (companyIndex in seq_len(complaintData$company)) {
+        print(sprintf("Updating company #%d (Out of %d)",
+                      companyIndex,
+                      numberCompanies))
+
+        complaintData$company <-
+            sub(paste0("^",company[companyIndex],"$"),
+                sprintf("company%d",companyIndex), complaintData$company)
+    }
+    
+    return(complaintData)
 }
 
 computePercentMissingData <- function(complaintData) {
     numberObservations <- nrow(complaintData)
     percentMissingData <- list()
-
+ 
     for (variable in colnames(complaintData)) {
         isVariableMissing <- findMissingObservations(variable,
                                                      complaintData)
@@ -69,7 +120,7 @@ findMissingObservations <- function(variable,
         isVariableMissing <- is.na(complaintData[,variable])
     #----------------------------------------------------
     } else if (variableClass == "character") {
-        isVariableMissing <- complaintData[,variable] == "" 
+        isVariableMissing <- complaintData[,variable] == ""
     #----------------------------------------------------
     } else {
         warning(sprintf("Need to add %s variable class", variableClass))
@@ -96,12 +147,12 @@ initializeVariablesToAnalyze <- function(maximumPercentMissing,
             
             isVariableMissing <- findMissingObservations(variable,
                                                          complaintData)
-            
-            dataFrameSegmentation[["isValidRow"]] <-
+
+            dataFrameSegmentation[["isValidRow"]] <- 
                 dataFrameSegmentation[["isValidRow"]] & !isVariableMissing
         }
     }
-    
+
     return(dataFrameSegmentation)
 }
 
