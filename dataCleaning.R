@@ -84,14 +84,13 @@ loadComplaintData <- function(csvFilePath,
     company <- unique(complaintData$company)
     numberCompanies <- length(company)
     
-    for (companyIndex in seq_len(complaintData$company)) {
-        print(sprintf("Updating company #%d (Out of %d)",
-                      companyIndex,
-                      numberCompanies))
+    for (companyIndex in seq_len(numberCompanies)) {
+        print(sprintf("Updating company #%d (Out of %d)", companyIndex,
+                                                          numberCompanies))
 
-        complaintData$company <-
-            sub(paste0("^",company[companyIndex],"$"),
-                sprintf("company%d",companyIndex), complaintData$company)
+        complaintData$company <- gsub(company[companyIndex],
+                                      sprintf("company%d",companyIndex),
+                                      complaintData$company)
     }
     
     return(complaintData)
