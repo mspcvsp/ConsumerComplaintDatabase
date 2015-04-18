@@ -1,3 +1,110 @@
+loadComplainData <- function(csvFilePath) {
+
+    complaintData <- read.csv("./Data/rows.csv",
+                              header=TRUE,
+                              stringsAsFactors=FALSE)
+    
+    # Transform the variable names to lower case
+    colnames(complaintData) <- tolower(colnames(complaintData))
+
+    # Remove '.' from variable names
+    colnames(complaintData) <- gsub('\\.','',colnames(complaintData))
+    
+    # Remove partial observations
+    percentMissingData <- computePercentMissingData(complaintData)
+    
+    dataFrameSegmentation <-
+        initializeVariablesToAnalyze(maximumPercentMissing,
+                                     percentMissingData,
+                                     complaintData)
+
+    complaintData <- complaintData[,dataFrameSegmentation$variables]
+    complaintData <- complaintData[dataFrameSegmentation$isValidRow,]
+
+    for (variable in colnames(complaintData)) {
+
+        if (class(complaintData[1,variable]) == "character") {
+            if (!grepl("date", variable)) {
+                # Transform to lower case
+                complaintData[,variable] <- tolower(complaintData[,variable])
+                
+                # Remove apostrophe (e.g. change cont'd to contd)
+                complaintData[,variable] <-
+                    gsub("([a-z]+)'([a-z]+)","\\1\\2",complaintData[,variable])
+
+                # Remove punctuation
+                # http://www.regular-expressions.info/posixbrackets.html
+                complaintData[,variable] <-
+                    sub("[[:punct:]]", " ", complaintData[,variable])
+                
+                # http://stackoverflow.com/questions/1981349/
+                #   regex-to-replace-multiple-spaces-with-a-single-space
+                complaintData[,variable] <-
+                    sub("\\s\\s+"," ",complaintData[,variable])
+            }
+        }
+    }    
+}
+
+computePercentMissingData <- function(complaintData) {
+    numberObservations <- nrow(complaintData)
+    percentMissingData <- list()
+
+    for (variable in colnames(complaintData)) {
+        isVariableMissing <- findMissingObservations(variable,
+                                                     complaintData)
+        
+        percentMissingData[[variable]] <-
+            100 * (sum(isVariableMissing) / numberObservations)
+    }
+    
+    return(percentMissingData)
+}
+
+findMissingObservations <- function(variable,
+                                    complaintData) {
+    variableClass <- class(complaintData[1,variable])
+
+    if (variableClass == "integer") {
+        isVariableMissing <- is.na(complaintData[,variable])
+    #----------------------------------------------------
+    } else if (variableClass == "character") {
+        isVariableMissing <- complaintData[,variable] == "" 
+    #----------------------------------------------------
+    } else {
+        warning(sprintf("Need to add %s variable class", variableClass))
+        
+        isVariableMissing <- vector(mode="logical", nrow(complaintData))
+    }
+    
+    return(isVariableMissing)
+}
+
+initializeVariablesToAnalyze <- function(maximumPercentMissing,
+                                         percentMissingData,
+                                         complaintData) {
+    dataFrameSegmentation <- list()
+    dataFrameSegmentation[["variables"]] <- vector()
+
+    dataFrameSegmentation[["isValidRow"]] <-
+        !vector(mode="logical", nrow(complaintData))
+
+    for (variable in names(percentMissingData)) {
+        if (percentMissingData[[variable]] <= maximumPercentMissing) {
+            dataFrameSegmentation[["variables"]] <-
+                append(dataFrameSegmentation[["variables"]], variable)
+            
+            isVariableMissing <- findMissingObservations(variable,
+                                                         complaintData)
+            
+            dataFrameSegmentation[["isValidRow"]] <-
+                dataFrameSegmentation[["isValidRow"]] & !isVariableMissing
+        }
+    }
+    
+    return(dataFrameSegmentation)
+}
+
 initializeIssueCategorySelection <- function(complaintData) {
     categorySelection <- list()
 
@@ -54,14 +161,14 @@ initializeBankingCategorySelection <- function(complaintData) {
         grepl("^incorrect exchange rate$", complaintData$issue) |
         grepl("^overdraft savings or rewards features$", complaintData$issue) |
         grepl("^using a debit or atm card$", complaintData$issue) |
-        grepl("^managing opening, or closing account$",
+        grepl("^managing opening or closing account$",
               complaintData$issue) |
         grepl("^balance transfer$", complaintData$issue) |
         grepl("^rewards$", complaintData$issue) |
         grepl("^closing cancelling account$", complaintData$issue) |
         grepl("^credit card protection debt protection$",
               complaintData$issue) |
-        grepl("^account opening closing, or management$", complaintData$issue)
+        grepl("^account opening closing or management$", complaintData$issue)
 
     return(isBankingIssue)
 }
@@ -73,7 +180,7 @@ initializeCommunicationIssueSelection <- function(complainData) {
         grepl("^taking threatening an illegal action$" , complaintData$issue) |
         grepl("^disclosures$", complaintData$issue) |
         grepl("^account terms and changes$", complaintData$issue) |
-        grepl("^can t contact lender$", complaintData$issue) |
+        grepl("^cant contact lender$", complaintData$issue) |
         grepl("^billing statement$", complaintData$issue) |
         grepl("^advertising and marketing$", complaintData$issue) |
         grepl("^incorrect missing disclosures or info$", complaintData$issue)
@@ -88,7 +195,7 @@ initializeCreditIssueSelection <- function(complaintData) {
               complaintData$issue) |
         grepl("^unable to get credit report credit score$",
               complaintData$issue) |
-        grepl("^credit reporting company s investigation$",
+        grepl("^credit reporting companys investigation$",
               complaintData$issue) |
         grepl("^credit monitoring or identity protection$",
               complaintData$issue) |
@@ -115,7 +222,7 @@ initializeCustomerServiceIssueSelection <- function(complaintData) {
 initializeDebtCollectionIssueSelection <- function(complaintData) {
 
     isDebtCollectionIssue <-
-        grepl("^cont d attempts collect debt not owed$",
+        grepl("^contd attempts collect debt not owed$",
               complaintData$issue) |
         grepl("^problems when you are unable to pay$", complaintData$issue) |
         grepl("^problems caused by my funds being low$", complaintData$issue) |
@@ -126,7 +233,7 @@ initializeDebtCollectionIssueSelection <- function(complaintData) {
         grepl("^collection practices$", complaintData$issue) |
         grepl("^collection debt dispute$", complaintData$issue) |
         grepl("^communication tactics$", complaintData$issue) |
-        grepl("^can t repay my loan$", complaintData$issue) |
+        grepl("^cant repay my loan$", complaintData$issue) |
         grepl("^lender damaged or destroyed property$", complaintData$issue) |
         grepl("^lender sold the property$", complaintData$issue) |
         grepl("^lender damaged or destroyed vehicle$", complaintData$issue)
@@ -145,7 +252,7 @@ initializeFeeIssueSelection <- function(complaintData) {
         grepl("^balance transfer fee$", complaintData$issue) |
         grepl("^late fee$", complaintData$issue) |
         grepl("^unexpected other fees$", complaintData$issue) |
-        grepl("^charged fees or interest i didn t expect$",
+        grepl("^charged fees or interest i didnt expect$",
               complaintData$issue)
     
     return(isFeeIssue)
@@ -156,7 +263,7 @@ initializeFinancialCrimeIssueSelection <- function(complaintData) {
     isFinancialCrimeIssue <- 
         grepl("^fraud or scam$", complaintData$issue) |
         grepl("^false statements or representation$", complaintData$issue) |
-        grepl("^identity theft fraud / embezzlement$", complaintData$issue)
+        grepl("^identity theft fraud embezzlement$", complaintData$issue)
     
     return(isFinancialCrimeIssue) 
 }
@@ -172,7 +279,7 @@ initializeLoanIssueSelection <- function(complaintData) {
               complaintData$issue) |
         grepl("^getting a loan$", complaintData$issue) |
         grepl("^payoff process$", complaintData$issue) |
-        grepl("^received a loan i didn t apply for$", complaintData$issue) |
+        grepl("^received a loan i didnt apply for$", complaintData$issue) |
         grepl("^credit line increase decrease$", complaintData$issue) |
         grepl("^apr or interest rate$", complaintData$issue) |
         grepl("^shopping for a loan or lease$", complaintData$issue) |
@@ -186,9 +293,9 @@ initializeLoanIssueSelection <- function(complaintData) {
 initializeMortgageIssueSelection <- function(complaintData) {
 
     isMortgageIssue <-
-        grepl("^loan servicing  payments, escrow account$",
+        grepl("^loan servicing payments escrow account$",
               complaintData$issue) |
-        grepl("^loan modification collection,foreclosure$",
+        grepl("^loan modification collection foreclosure$",
               complaintData$issue) |
         grepl("^settlement process and costs$", complaintData$issue) |
         grepl("^managing the loan or lease$", complaintData$issue) |
@@ -196,9 +303,9 @@ initializeMortgageIssueSelection <- function(complaintData) {
         grepl("^sale of account$", complaintData$issue) |
         grepl("^forbearance workout plans$", complaintData$issue) |
         grepl("^credit decision underwriting$", complaintData$issue) |
-        grepl("^application originator, mortgage broker$",
+        grepl("^application originator mortgage broker$",
               complaintData$issue) |
-        grepl("^loan servicing payments, escrow account$",
+        grepl("^loan servicing payments escrow account$",
               complaintData$issue)
     
     return(isMortgageIssue)
@@ -224,7 +331,7 @@ initiaizeTransationIssueSelection <- function(complaintData) {
 
     isTransactionIssue <- 
         grepl("^wrong amount charged or received$", complaintData$issue) |
-        grepl("^making receiving payments, sending money$",
+        grepl("^making receiving payments sending money$",
               complaintData$issue) |
         grepl("^cash advance$", complaintData$issue) |
         grepl("^transaction issue$", complaintData$issue) |
@@ -238,9 +345,9 @@ initializeUnauthorizedTransactionIssueSelection <- function(complaintData) {
 
     isUnauthorizedTransactionIssue <-
         grepl("^unsolicited issuance of credit card$", complaintData$issue) |
-        grepl("^unauthorized transactions trans\\. issues$",
+        grepl("^unauthorized transactions trans issues$",
               complaintData$issue) |
-        grepl("^can t stop charges to bank account$", complaintData$issue)    
+        grepl("^cant stop charges to bank account$", complaintData$issue)    
 
     return(isUnauthorizedTransactionIssue)
 }

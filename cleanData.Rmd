@@ -18,32 +18,7 @@ if (is.na(file.info("./Data")[1,"isdir"])) {
   download.file(fileURL, destfile="./Data/rows.csv", method="curl")
 }
 
-complaintData <- read.csv("./Data/rows.csv",
-                          header=TRUE,
-                          stringsAsFactors=FALSE)
 
-# Transform the variable names to lower case
-colnames(complaintData) <- tolower(colnames(complaintData))
-
-# Remove '.' from variable names
-colnames(complaintData) <- gsub('\\.','',colnames(complaintData))
-
-# Remove rows where either the complaint issue is missing
-nrowsBefore <- nrow(complaintData)
-complaintData <- complaintData[which(complaintData$issue != ""),]
-nrowsAfter <- nrow(complaintData)
-percentIssueMissing <- 100 * (1 - (nrowsAfter / nrowsBefore))
-
-# Transform complaint issue to lower case
-complaintData$issue <- tolower(complaintData$issue)
-
-# Remove punctuation from complaint issues
-# http://www.regular-expressions.info/posixbrackets.html
-complaintData$issue <- sub("[[:punct:]]", " ", complaintData$issue)
-
-# http://stackoverflow.com/questions/1981349/
-#   regex-to-replace-multiple-spaces-with-a-single-space
-complaintData$issue <- sub("\\s\\s+"," ",complaintData$issue)
 
 # Aggregate complaint issues
 categorySelection <- initializeIssueCategorySelection(complaintData)
