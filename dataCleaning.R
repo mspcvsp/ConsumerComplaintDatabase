@@ -1,3 +1,6 @@
+library(zipcode)
+library(lubridate)
+
 loadComplaintData <- function(csvFilePath,
                               maximumPercentMissing) {
 
@@ -88,11 +91,77 @@ loadComplaintData <- function(csvFilePath,
     levels(complaintData$companyid) <-
         as.character(seq_len(length(levels(complaintData$companyid))))
 
+    # Convert date variables
+    for (dateVariable in c("datereceived","datesenttocompany")) {
+        complaintData[,dateVariable] <- mdy(complaintData[,dateVariable])
+    }
+    
+    # Convert factor variables
+    factorVariables <- c("product",
+                         "issue",
+                         "state",
+                         "zipcode",
+                         "submittedvia",
+                         "company",
+                         "companyresponse",
+                         "timelyresponse",
+                         "consumerdisputed",
+                         "issuecategory",
+                         "city")
+    
+    for (factorVariable in factorVariables) {
+        complaintData[,factorVariable] <-
+            as.factor(complaintData[,factorVariable])
+    }
+        
     cleanData <- list()
     cleanData$complaintData <- complaintData
     cleanData$percentMissingData <- percentMissingData
 
     return(cleanData) 
+}
+
+splitData <- function(analyticDataPath,
+                      complaintData) {
+    # http://stackoverflow.com/questions/13610074/
+    #   is-there-a-rule-of-thumb-for-how-to-divide-a-dataset-into-
+    #   training-and-validatio
+    #
+    # http://topepo.github.io/caret/splitting.html
+    trainIndex <- createDataPartition(complaintData$issue,
+                                      p = .8,
+                                      list = FALSE,
+                                      times = 1)
+    
+    testIndex <- seq_len(nrow(complaintData))
+    testIndex <- testIndex[!(testIndex %in% trainIndex)]
+    
+    trainingData <- complaintData[trainIndex,]
+    testData <- complaintData[testIndex,]
+    
+    trainIndex <- createDataPartition(trainingData$issue,
+                                      p = .8,
+                                      list = FALSE,
+                                      times = 1)
+
+    validationIndex <- seq_len(nrow(trainingData))
+    validationIndex <- validationIndex[!(validationIndex %in% trainIndex)]
+    
+    validationData <- trainingData[validationIndex,]
+    trainingData <- trainingData[trainIndex,]    
+
+    if (is.na(file.info(analyticDataPath)[1,"isdir"])) {
+        dir.create(analyticDataPath)
+    }
+    
+    write.csv(file=file.path(analyticDataPath, "trainingData.csv"),
+              trainingData)
+    
+    write.csv(file=file.path(analyticDataPath, "validationData.csv"),
+              validationData)
+    
+    write.csv(file=file.path(analyticDataPath, "testData.csv"),
+              testData)
 }
 
 computePercentMissingData <- function(complaintData) {

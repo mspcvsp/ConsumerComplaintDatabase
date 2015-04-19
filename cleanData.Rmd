@@ -7,8 +7,8 @@ output: html_document
 
 ```{r downloadData}
 library(caret)
-library(zipcode)
 source("./dataCleaning.R")
+set.seed(58978160)
 
 fileURL <- paste0('https://data.consumerfinance.gov/api/views',
                   '/x94z-ydhh/rows.csv?accessType=DOWNLOAD')
@@ -23,13 +23,13 @@ cleanData <- loadComplaintData(csvFilePath="./Data/rows.csv",
                                maximumPercentMissing=10.0)
 
 complaintData <- cleanData$complaintData
-percentMissingData <- cleanData$percentMissingData
+percentMissingData <- cleanData$percentMissingDataW
 rm(cleanData)
 
-# http://stackoverflow.com/questions/13610074/
-#   is-there-a-rule-of-thumb-for-how-to-divide-a-dataset-into-training-and-validatio
-set.seed(58978160)
-trainIndex <- createDataPartition(complaintData$issue, p = .8,
-                                  list = FALSE,
-                                  times = 1)
+analyticDataPath <- "./AnalyticData"
+
+splitData(analyticDataPath,
+          complaintData)
+
+trainingData <- read.csv()
 ```
