@@ -7,12 +7,18 @@ loadComplaintData <- function(csvFilePath,
     complaintData <- read.csv(csvFilePath,
                               header=TRUE,
                               stringsAsFactors=FALSE)
-    
+
     # Transform the variable names to lower case
     colnames(complaintData) <- tolower(colnames(complaintData))
 
     # Remove '.' from variable names
     colnames(complaintData) <- gsub('\\.','',colnames(complaintData))
+    
+    # Remove states outside of the continental U.S.
+    continentalUSStates <- append(state.abb, "DC")
+
+    complaintData <-
+        complaintData[which(complaintData$state %in% continentalUSStates),]
     
     # Remove partial observations
     percentMissingData <- computePercentMissingData(complaintData)

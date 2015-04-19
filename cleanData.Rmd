@@ -7,7 +7,11 @@ output: html_document
 
 ```{r downloadData}
 library(caret)
+library(choroplethr)
+library(choroplethrMaps)
+
 source("./dataCleaning.R")
+source("./dataAnalysis.R")
 set.seed(58978160)
 
 fileURL <- paste0('https://data.consumerfinance.gov/api/views',
@@ -31,5 +35,37 @@ analyticDataPath <- "./AnalyticData"
 splitData(analyticDataPath,
           complaintData)
 
-trainingData <- read.csv()
+trainingData <- read.csv(file.path(analyticDataPath, "trainingData.csv"))
+
+trainingData$companyid <- as.factor(as.character(trainingData$companyid))
+
+summaryIssueCategoryPercentage <- table(trainingData$issuecategory)
+
+summaryIssueCategoryPercentage <-
+    sort(100 * summaryIssueCategoryPercentage / 
+         sum(summaryIssueCategoryPercentage), decreasing=TRUE)
+
+stateIssueCategoryPercentage <-
+    computeStateIssueCategoryPercentage(trainingData)
+
+mortgageRows <-
+    which(stateIssueCategoryPercentage$issuecateogry == "mortgage")
+
+mortgatePercentage <-
+    stateIssueCategoryPercentage[mortgageRows,c("state","percentage")]
+
+rownames(mortgatePercentage) <- NULL
+
+colnames(mortgatePercentage) <- c("abb","value")
+mortgatePercentage$abb <- as.character(mortgatePercentage$abb)
+
+data(state.regions)
+
+mortgatePercentage <- dplyr::left_join(mortgatePercentage,
+                                       state.regions,
+                                       by=c("abb"))
+
+mortgatePercentage <- mortgatePercentage[,c("region","value")]
+
+state_choropleth(mortgatePercentage)
 ```
