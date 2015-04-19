@@ -17,15 +17,19 @@ if (is.na(file.info("./Data")[1,"isdir"])) {
     dir.create("./Data")
     
   download.file(fileURL, destfile="./Data/rows.csv", method="curl")
-}
+}  
 
-complaintData <- loadComplainData(csvFilePath="./Data/rows.csv",
-                                  maximumPercentMissing=10.0){
+cleanData <- loadComplaintData(csvFilePath="./Data/rows.csv",
+                               maximumPercentMissing=10.0)
 
+complaintData <- cleanData$complaintData
+percentMissingData <- cleanData$percentMissingData
+rm(cleanData)
 
-# Aggregate complaint issues
-
-
-findUncategorizedIssues(categorySelection, complaintData)
+# http://stackoverflow.com/questions/13610074/
+#   is-there-a-rule-of-thumb-for-how-to-divide-a-dataset-into-training-and-validatio
+set.seed(58978160)
+trainIndex <- createDataPartition(complaintData$issue, p = .8,
+                                  list = FALSE,
+                                  times = 1)
 ```
-# http://stackoverflow.com/questions/13610074/is-there-a-rule-of-thumb-for-how-to-divide-a-dataset-into-training-and-validatio

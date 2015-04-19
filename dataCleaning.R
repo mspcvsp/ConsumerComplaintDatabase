@@ -77,23 +77,22 @@ loadComplaintData <- function(csvFilePath,
 
     complaintData <- complaintData[complete.cases(complaintData),]
 
-    # Anomonize the company names
+    # Add a companyid variable
     #
     # http://stackoverflow.com/questions/8214303/
     #   conditional-replacement-of-values-in-a-data-frame
-    company <- unique(complaintData$company)
-    numberCompanies <- length(company)
+    complaintData$companyid <- complaintData$company
     
-    for (companyIndex in seq_len(numberCompanies)) {
-        print(sprintf("Updating company #%d (Out of %d)", companyIndex,
-                                                          numberCompanies))
+    complaintData$companyid <- as.factor(complaintData$companyid)
+    
+    levels(complaintData$companyid) <-
+        as.character(seq_len(length(levels(complaintData$companyid))))
 
-        complaintData$company <- gsub(company[companyIndex],
-                                      sprintf("company%d",companyIndex),
-                                      complaintData$company)
-    }
-    
-    return(complaintData)
+    cleanData <- list()
+    cleanData$complaintData <- complaintData
+    cleanData$percentMissingData <- percentMissingData
+
+    return(cleanData) 
 }
 
 computePercentMissingData <- function(complaintData) {
@@ -223,7 +222,7 @@ initializeBankingCategorySelection <- function(complaintData) {
     return(isBankingIssue)
 }
 
-initializeCommunicationIssueSelection <- function(complainData) {
+initializeCommunicationIssueSelection <- function(complaintData) {
     
     isCommunicationIssue <-
         grepl("^advertising marketing or disclosures$", complaintData$issue) |
