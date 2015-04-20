@@ -36,7 +36,7 @@ if (is.na(file.info(file.path(analyticDataPath,
                               "/trainingData.csv"))[1,"size"])) {
     cleanData <- loadComplaintData(csvFilePath="./Data/rows.csv",
                                    maximumPercentMissing=10.0)
-    
+
     complaintData <- cleanData$complaintData
     percentMissingData <- cleanData$percentMissingData
     rm(cleanData)
@@ -51,7 +51,8 @@ if (is.na(file.info(file.path(analyticDataPath,
 load(file=file.path(analyticDataPath, "PercentMissingData.RData"))
 
 trainingData <- read.csv(file.path(analyticDataPath,
-                                   "trainingData.csv"))
+                                   "trainingData.csv"),
+                         header=TRUE)
 
 trainingData$companyid <- as.factor(as.character(trainingData$companyid))
 ```

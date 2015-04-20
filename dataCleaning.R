@@ -73,7 +73,7 @@ loadComplaintData <- function(csvFilePath,
     colnames(zipcode) <- c("zipcode","city","state","latitude","longitude")
     zipcode$zipcode <- as.integer(zipcode$zipcode)
     complaintData$state <- toupper(complaintData$state)
-    
+
     # http://www.rstudio.com/wp-content/uploads/2015/02/
     #   data-wrangling-cheatsheet.pdf
     complaintData <- dplyr::left_join(complaintData,
@@ -91,7 +91,7 @@ loadComplaintData <- function(csvFilePath,
     # http://stackoverflow.com/questions/8214303/
     #   conditional-replacement-of-values-in-a-data-frame
     complaintData$companyid <- complaintData$company
-    
+
     complaintData$companyid <- as.factor(complaintData$companyid)
     
     levels(complaintData$companyid) <-
@@ -159,15 +159,18 @@ splitData <- function(analyticDataPath,
     if (is.na(file.info(analyticDataPath)[1,"isdir"])) {
         dir.create(analyticDataPath)
     }
-    
+
     write.csv(file=file.path(analyticDataPath, "trainingData.csv"),
-              trainingData)
+              trainingData,
+              row.names=FALSE)
     
     write.csv(file=file.path(analyticDataPath, "validationData.csv"),
-              validationData)
-    
+              validationData,
+              row.names=FALSE)
+
     write.csv(file=file.path(analyticDataPath, "testData.csv"),
-              testData)
+              testData,
+              row.names=FALSE)
 }
 
 computePercentMissingData <- function(complaintData) {
