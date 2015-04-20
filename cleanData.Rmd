@@ -9,36 +9,49 @@ output: html_document
 library(caret)
 library(choroplethr)
 library(choroplethrMaps)
+library(ggplot2)
+library(RColorBrewer)
+
+data(state.regions)
 
 source("./dataCleaning.R")
 source("./dataAnalysis.R")
 set.seed(58978160)
 
+# Initialize the CFPB Consumer Complaint Database URL
 fileURL <- paste0('https://data.consumerfinance.gov/api/views',
                   '/x94z-ydhh/rows.csv?accessType=DOWNLOAD')
 
+# Download data if directory doesn't exist
 if (is.na(file.info("./Data")[1,"isdir"])) {
     dir.create("./Data")
     
   download.file(fileURL, destfile="./Data/rows.csv", method="curl")
 }  
 
-cleanData <- loadComplaintData(csvFilePath="./Data/rows.csv",
-                               maximumPercentMissing=10.0)
-
-complaintData <- cleanData$complaintData
-percentMissingData <- cleanData$percentMissingDataW
-rm(cleanData)
-
 analyticDataPath <- "./AnalyticData"
 
-splitData(analyticDataPath,
+# Generate training, validation, & testing data if it doesn't exist
+if (is.na(file.info(file.path(analyticDataPath,
+                              "/trainingData.csv"))[1,"size"])) {
+    cleanData <- loadComplaintData(csvFilePath="./Data/rows.csv",
+                                   maximumPercentMissing=10.0)
+    
+    complaintData <- cleanData$complaintData
+    percentMissingData <- cleanData$percentMissingDataW
+    rm(cleanData)
+    
+    splitData(analyticDataPath,
           complaintData)
+}
 
-trainingData <- read.csv(file.path(analyticDataPath, "trainingData.csv"))
+trainingData <- read.csv(file.path(analyticDataPath,
+                                   "trainingData.csv"))
 
 trainingData$companyid <- as.factor(as.character(trainingData$companyid))
+```
 
+```{r mortgagePercentage}
 summaryIssueCategoryPercentage <- table(trainingData$issuecategory)
 
 summaryIssueCategoryPercentage <-
@@ -48,24 +61,46 @@ summaryIssueCategoryPercentage <-
 stateIssueCategoryPercentage <-
     computeStateIssueCategoryPercentage(trainingData)
 
-mortgageRows <-
-    which(stateIssueCategoryPercentage$issuecateogry == "mortgage")
+mortgagePercentage <- initializePercentIssue("mortgage",
+                                             stateIssueCategoryPercentage,
+                                             state.regions)
 
-mortgatePercentage <-
-    stateIssueCategoryPercentage[mortgageRows,c("state","percentage")]
+choro = StateChoropleth$new(mortgagePercentage)
+choro$title <- "Percentage of Mortgage Complaints"
+choro$ggplot_scale = scale_fill_brewer(palette="PuBuGn")
+choro$render()
+```
 
-rownames(mortgatePercentage) <- NULL
+```{r debtCollectionPercentage}
+debtCollectionPercentage <-
+    initializePercentIssue("debtcollection",
+                           stateIssueCategoryPercentage,
+                           state.regions)
 
-colnames(mortgatePercentage) <- c("abb","value")
-mortgatePercentage$abb <- as.character(mortgatePercentage$abb)
+choro = StateChoropleth$new(debtCollectionPercentage)
+choro$title <- "Percentage of Debt Collection Complaints"
+choro$ggplot_scale = scale_fill_brewer(palette="YlGnBu")
+choro$render()
+```
 
-data(state.regions)
+```{r creditPercentage}
+creditPercentage <- initializePercentIssue("credit",
+                                           stateIssueCategoryPercentage,
+                                           state.regions)
 
-mortgatePercentage <- dplyr::left_join(mortgatePercentage,
-                                       state.regions,
-                                       by=c("abb"))
+choro = StateChoropleth$new(creditPercentage)
+choro$title <- "Percentage of Credit Complaints"
+choro$ggplot_scale = scale_fill_brewer(palette="Oranges")
+choro$render()
+```
 
-mortgatePercentage <- mortgatePercentage[,c("region","value")]
+```{r bankingPercentage}
+bankingPercentage <- initializePercentIssue("banking",
+                                            stateIssueCategoryPercentage,
+                                            state.regions)
 
-state_choropleth(mortgatePercentage)
+choro = StateChoropleth$new(bankingPercentage)
+choro$title <- "Percentage of Banking Complaints"
+choro$ggplot_scale = scale_fill_brewer(palette="RdPu")
+choro$render()
 ```

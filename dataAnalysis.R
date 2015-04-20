@@ -1,3 +1,7 @@
+# http://stackoverflow.com/questions/18931006/
+#   how-to-suppress-warning-messages-when-loading-a-library
+suppressWarnings(library(dplyr))
+
 computeStateIssueCategoryPercentage <- function(complaintData) {
     issueCategoryPercentage <- data.frame()
     
@@ -29,3 +33,29 @@ computeStateIssueCategoryPercentage <- function(complaintData) {
     
     return(issueCategoryPercentage)
 }
+
+initializePercentIssue <- function(issuecategory,
+                                   stateIssueCategoryPercentage,
+                                   state.regions) {
+    issueCategoryRows <-
+        which(stateIssueCategoryPercentage$issuecateogry == issuecategory)
+    
+    issueCategoryPercentage <-
+        stateIssueCategoryPercentage[issueCategoryRows, c("state",
+                                                          "percentage")]
+    
+    rownames(issueCategoryPercentage) <- NULL
+    
+    colnames(issueCategoryPercentage) <- c("abb", "value")
+    issueCategoryPercentage$abb <- as.character(issueCategoryPercentage$abb)
+    
+    issueCategoryPercentage <- dplyr::left_join(issueCategoryPercentage,
+                                                state.regions,
+                                                by=c("abb"))
+    
+    issueCategoryPercentage <- issueCategoryPercentage[,c("region","value")]
+    
+    return(issueCategoryPercentage)
+}
+
+
