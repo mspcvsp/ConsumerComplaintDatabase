@@ -38,12 +38,17 @@ if (is.na(file.info(file.path(analyticDataPath,
                                    maximumPercentMissing=10.0)
     
     complaintData <- cleanData$complaintData
-    percentMissingData <- cleanData$percentMissingDataW
+    percentMissingData <- cleanData$percentMissingData
     rm(cleanData)
-    
+
+    save(file=file.path(analyticDataPath, "PercentMissingData.RData"),
+         percentMissingData)
+
     splitData(analyticDataPath,
-          complaintData)
+              complaintData)
 }
+
+load(file=file.path(analyticDataPath, "PercentMissingData.RData"))
 
 trainingData <- read.csv(file.path(analyticDataPath,
                                    "trainingData.csv"))
@@ -65,10 +70,13 @@ mortgagePercentage <- initializePercentIssue("mortgage",
                                              stateIssueCategoryPercentage,
                                              state.regions)
 
+# http://cran.r-project.org/web/packages/choroplethr/vignettes/
+#   b-state-choropleth.html
 choro = StateChoropleth$new(mortgagePercentage)
 choro$title <- "Percentage of Mortgage Complaints"
 choro$ggplot_scale = scale_fill_brewer(palette="PuBuGn")
 choro$render()
+ggsave("./PercentageOfMortgageComplaints.png")
 ```
 
 ```{r debtCollectionPercentage}
