@@ -58,4 +58,53 @@ initializePercentIssue <- function(issuecategory,
     return(issueCategoryPercentage)
 }
 
+initializeZipCodeIssueCategoryPercentage <- function(complaintData,
+                                                     stateList) {
+    categoryPercentage <- data.frame()
+
+    for (state in stateList) {
+        print(sprintf("Estimating the issue category percentage for %s",
+                      state))
+
+        stateData <- complaintData[which(complaintData$state == state),]
+        
+        zipCodes <- unique(stateData$zipcode)
+        numberZipCodes <- length(zipCodes)
+
+        for (index in seq_len(numberZipCodes)) {
+            if ((index-1) %% 100 == 0) {
+                print(sprintf("\tProcessing zipcode #%d (Out of %d)", index,
+                              numberZipCodes))            
+            }
+            
+            zipCodeData <- complaintData[which(complaintData$zipcode == 
+                                               zipCodes[index]),]
+            
+            zipcodePercentage <- table(zipCodeData$issuecategory)
+            zipcodePercentage <- 100 * (zipcodePercentage / 
+                                        sum(zipcodePercentage))
+            
+            baseRow <- zipCodeData[1,c("city",
+                                       "state",
+                                       "latitude",
+                                       "longitude",
+                                       "zipcode")]
+            baseRow$percentage <- NA
+            baseRow$issuecateogry <- NA
+            
+            for (issueCategory in names(zipcodePercentage)) {
+                if (zipcodePercentage[issueCategory] > 0) {
+                    currentRow <-baseRow
+                    currentRow$issuecateogry <- issueCategory
+                    currentRow$percentage <- zipcodePercentage[issueCategory] 
+                    
+                    categoryPercentage <- rbind(categoryPercentage,
+                                                currentRow)
+                }
+            }
+        }
+    }
+    
+    return(categoryPercentage)
+}
 
