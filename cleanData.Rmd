@@ -162,4 +162,6 @@ ggmap(ohioMap) + geom_point(aes(x=lon,
                                 alpha=0.5),
                             data=ohioIssueCategoryPercentage[isSignificant,])
 
+# http://stackoverflow.com/questions/28672984/
+#   r-maps-filter-coordinates-out-when-plotting-points-in-map
 ```
