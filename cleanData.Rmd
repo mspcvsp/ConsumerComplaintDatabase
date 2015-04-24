@@ -9,6 +9,7 @@ output: html_document
 library(caret)
 library(choroplethr)
 library(choroplethrMaps)
+library(data.table)
 library(ggplot2)
 library(RColorBrewer)
 
@@ -126,12 +127,30 @@ colnames(ohioIssueCategoryPercentage) <-
 colnames(ohioIssueCategoryPercentage) <-
     gsub("longitude","lon",colnames(ohioIssueCategoryPercentage))
 
+ohioIssueCategoryPercentage$percentageRange <-
+    cut(ohioIssueCategoryPercentage$percentage,
+        seq(0,100,by=12.5))
+
+ohioIssueCategoryPercentage$alpha <- 0.5
+
+ohioIssueCategoryPercentage$fraction <-
+    ohioIssueCategoryPercentage$percentage / 100.0
+
+# http://rprogramming.net/aggregate-data-in-r-using-data-table/
+ohioIssueCategoryPercentage <- data.table(ohioIssueCategoryPercentage)
+setkey(ohioIssueCategoryPercentage, issuecateogry)
+
+# http://www.statmethods.net/management/sorting.html
+weightedSum <- ohioIssueCategoryPercentage[,sum(fraction),by=issuecateogry]
+weightedSum <- data.frame(weightedSum)
+weightedSum <- weightedSum[order(-V1),]
+
 ohioMap <- get_map("ohio",zoom=7,source="stamen",maptype="toner")
 ggmap(ohioMap) + geom_point(aes(x=lon,
                                 y=lat,
                                 colour=issuecateogry,
-                                size=percentage,
-                                alpha=0.5),
+                                size=percentageRange,
+                                alpha=alpha),
                             data=ohioIssueCategoryPercentage)
 
 isSignificant <- which(ohioIssueCategoryPercentage$percentage >= 25)
