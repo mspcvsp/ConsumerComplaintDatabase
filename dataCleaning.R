@@ -68,6 +68,13 @@ loadComplaintData <- function(csvFilePath,
             tolower(category)
     }
 
+    isOtherCategory <- complaintData$issuecategory == "other"
+    
+    percentMissingData$othercategory <- 100 * sum(isOtherCategory) / 
+                                        nrow(complaintData)
+    
+    complaintData <- complaintData[!isOtherCategory,]
+
     # Append city, state, latitude, & lognitude to consumer complaint database 
     data(zipcode)
     colnames(zipcode) <- c("zipcode","city","state","latitude","longitude")
