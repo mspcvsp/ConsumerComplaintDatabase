@@ -108,3 +108,43 @@ initializeZipCodeIssueCategoryPercentage <- function(complaintData,
     return(categoryPercentage)
 }
 
+estimateTopFiveStateIssueCategories <- function(complaintData,
+                                                stateAbbreviation) {
+    stateIssueCategoryPercentage <- 
+        initializeZipCodeIssueCategoryPercentage(complaintData,
+                                                 c(stateAbbreviation))
+    colnames(stateIssueCategoryPercentage) <-
+        gsub("latitude","lat",colnames(stateIssueCategoryPercentage))
+    
+    colnames(stateIssueCategoryPercentage) <-
+        gsub("longitude","lon",colnames(stateIssueCategoryPercentage))
+    
+    stateIssueCategoryPercentage$percentageRange <-
+        cut(stateIssueCategoryPercentage$percentage,
+            seq(0,100,by=12.5))
+    
+    stateIssueCategoryPercentage$fraction <-
+        stateIssueCategoryPercentage$percentage / 100.0
+    
+    # http://rprogramming.net/aggregate-data-in-r-using-data-table/
+    stateIssueCategoryPercentage <- data.table(stateIssueCategoryPercentage)
+    setkey(stateIssueCategoryPercentage, issuecateogry)
+    
+    # http://www.statmethods.net/management/sorting.html
+    weightedSum <- stateIssueCategoryPercentage[,sum(fraction),
+                                                by=issuecateogry]
+    weightedSum <- weightedSum[order(-V1),]
+    weightedSum <- data.frame(weightedSum)
+    colnames(weightedSum) <- c("issuecategory","weightedsum")
+    
+    topFiveCategories <- weightedSum[1:5,c("issuecategory")]
+    
+    stateIssueCategoryPercentage <- data.frame(stateIssueCategoryPercentage)
+    
+    isTopFive <- stateIssueCategoryPercentage$issuecateogry %in% 
+                 topFiveCategories
+    
+    stateIssueCategoryPercentage <- stateIssueCategoryPercentage[isTopFive,]
+    
+    return(stateIssueCategoryPercentage)
+}

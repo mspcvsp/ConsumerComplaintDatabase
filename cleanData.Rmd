@@ -12,7 +12,7 @@ library(choroplethrMaps)
 library(data.table)
 library(ggplot2)
 library(RColorBrewer)
-library(ggmaps)
+library(ggmap)
 
 data(state.regions)
 
@@ -116,44 +116,18 @@ choro$ggplot_scale = scale_fill_brewer(palette="RdPu")
 choro$render()
 ```
 
-```{r vizOSM}
-ohioIssueCategoryPercentage <- 
-    initializeZipCodeIssueCategoryPercentage(trainingData,
-                                             c("OH"))
-
-colnames(ohioIssueCategoryPercentage) <-
-    gsub("latitude","lat",colnames(ohioIssueCategoryPercentage))
-
-colnames(ohioIssueCategoryPercentage) <-
-    gsub("longitude","lon",colnames(ohioIssueCategoryPercentage))
-
-ohioIssueCategoryPercentage$percentageRange <-
-    cut(ohioIssueCategoryPercentage$percentage,
-        seq(0,100,by=12.5))
-
-ohioIssueCategoryPercentage$fraction <-
-    ohioIssueCategoryPercentage$percentage / 100.0
-
-# http://rprogramming.net/aggregate-data-in-r-using-data-table/
-ohioIssueCategoryPercentage <- data.table(ohioIssueCategoryPercentage)
-setkey(ohioIssueCategoryPercentage, issuecateogry)
-
-# http://www.statmethods.net/management/sorting.html
-weightedSum <- ohioIssueCategoryPercentage[,sum(fraction),by=issuecateogry]
-weightedSum <- weightedSum[order(-V1),]
-weightedSum <- data.frame(weightedSum)
-colnames(weightedSum) <- c("issuecategory","weightedsum")
-
-topFiveCategories <- weightedSum[1:5,c("issuecategory")]
-
-ohioIssueCategoryPercentage <- data.frame(ohioIssueCategoryPercentage)
-
-isTopFive <- ohioIssueCategoryPercentage$issuecateogry %in% 
-             topFiveCategories
-
-topFiveOhioIssueCategories <- ohioIssueCategoryPercentage[isTopFive,] 
-
-ohioMap <- get_map("ohio",zoom=7,source="stamen",maptype="toner")
+```{r vizTopFiveOhioIssueCategories}
+if (is.na(file.info(file.path(analyticDataPath,
+                              "/ohioMapData.RData"))[1,"size"])) {
+    ohioMap <- get_map("ohio",zoom=7,source="stamen",maptype="toner")
+    
+    topFiveOhioIssueCategories <-
+        estimateTopFiveStateIssueCategories(trainingData, "OH")
+    
+    save(ohioMap,topFiveOhioIssueCategories,
+         file=file.path(analyticDataPath,"/ohioMapData.RData"))
+}
+load(file=file.path(analyticDataPath,"/ohioMapData.RData"))
 
 ggmap(ohioMap) + geom_point(aes(x=lon,
                                 y=lat,
@@ -161,6 +135,40 @@ ggmap(ohioMap) + geom_point(aes(x=lon,
                                 size=percentageRange),
                                 alpha=0.5,
                                 data=topFiveOhioIssueCategories) +
-    scale_color_brewer(palette="Dark2")
+    scale_color_brewer(palette="Dark2") + 
+    ggtitle('Estimated Top Five Consumer Complaint Issue Cateogries')
 ggsave("./topFiveOhioIssueCategories.png")
+```
+
+```{r vizTopFiveTexasIssueCategories}
+if (is.na(file.info(file.path(analyticDataPath,
+                              "/texasMapData.RData"))[1,"size"])) {
+    texasMap <- get_map("texas",zoom=6,source="stamen",maptype="toner")
+    
+    topFiveTexasIssueCategories <-
+        estimateTopFiveStateIssueCategories(trainingData, "TX")
+    
+    save(texasMap,topFiveTexasIssueCategories,
+         file=file.path(analyticDataPath,"/ohioMapData.RData"))
+}
+load(file=file.path(analyticDataPath,"/texasMapData.RData"))
+
+ggmap(texasMap) + geom_point(aes(x=lon,
+                                 y=lat,
+                                 colour=issuecateogry,
+                                 size=percentageRange),
+                                 alpha=0.5,
+                                 data=topFiveTexasIssueCategories) +
+    scale_color_brewer(palette="Dark2") + 
+    ggtitle('Estimated Top Five Consumer Complaint Issue Cateogries')
+ggsave("./topFiveTexasIssueCategories.png")
+```
+
+
+
+
+
+
+
+
 ```
