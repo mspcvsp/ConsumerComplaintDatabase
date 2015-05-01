@@ -34,6 +34,39 @@ computeStateIssueCategoryPercentage <- function(complaintData) {
     return(issueCategoryPercentage)
 }
 
+computeStateSubmittedViaPercentage <- function(complaintData) {
+    submittedViaPercentage <- data.frame()
+    
+    for (stateAbb in unique(complaintData$state)) {
+        stateData <- complaintData[which(complaintData$state == stateAbb),]
+        
+        # http://stackoverflow.com/questions/1195826/
+        #   dropping-factor-levels-in-a-subsetted-data-frame-in-r
+        stateData$submittedvia <-
+            as.factor(as.character(stateData$submittedvia))
+
+        stateSubmittedViaPercentage <- table(stateData$submittedvia)
+
+        stateSubmittedViaPercentage <- 100*stateSubmittedViaPercentage / 
+                                       sum(stateSubmittedViaPercentage)
+        
+        for (submittedvia in names(stateSubmittedViaPercentage)) {
+            currentRow <- 
+                data.frame(state=stateAbb,
+                           submittedvia=submittedvia,
+                           percentage=
+                               stateSubmittedViaPercentage[submittedvia])
+            
+            rownames(currentRow) <- NULL
+            
+            submittedViaPercentage <- rbind(submittedViaPercentage,
+                                            currentRow)
+        }
+    }
+    
+    return(submittedViaPercentage)
+}
+
 initializePercentIssue <- function(issuecategory,
                                    stateIssueCategoryPercentage,
                                    state.regions) {
@@ -56,6 +89,30 @@ initializePercentIssue <- function(issuecategory,
     issueCategoryPercentage <- issueCategoryPercentage[,c("region","value")]
     
     return(issueCategoryPercentage)
+}
+
+initializePercentSubmittedVia <- function(submittedvia,
+                                          stateSubmittedViaPercentage,
+                                          state.regions) {
+    submittedViaRows <-
+        which(stateSubmittedViaPercentage$submittedvia == submittedvia)
+    
+    submittedViaPercentage <-
+        stateSubmittedViaPercentage[submittedViaRows, c("state",
+                                                        "percentage")]
+    
+    rownames(submittedViaPercentage) <- NULL
+    
+    colnames(submittedViaPercentage) <- c("abb", "value")
+    submittedViaPercentage$abb <- as.character(submittedViaPercentage$abb)
+    
+    submittedViaPercentage <- dplyr::left_join(submittedViaPercentage,
+                                               state.regions,
+                                               by=c("abb"))
+    
+    submittedViaPercentage <- submittedViaPercentage[,c("region","value")]
+    
+    return(submittedViaPercentage)
 }
 
 initializeZipCodeIssueCategoryPercentage <- function(complaintData,

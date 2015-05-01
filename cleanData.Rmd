@@ -73,6 +73,9 @@ mortgagePercentage <- initializePercentIssue("mortgage",
                                              stateIssueCategoryPercentage,
                                              state.regions)
 
+stateSubmittedViaPercentage <-
+    computeStateSubmittedViaPercentage(trainingData)
+
 # http://cran.r-project.org/web/packages/choroplethr/vignettes/
 #   b-state-choropleth.html
 choro = StateChoropleth$new(mortgagePercentage)
@@ -113,6 +116,18 @@ bankingPercentage <- initializePercentIssue("banking",
 choro = StateChoropleth$new(bankingPercentage)
 choro$title <- "Percentage of Banking Complaints"
 choro$ggplot_scale = scale_fill_brewer(palette="RdPu")
+choro$render()
+```
+
+```{r webSubmittedPercentage}
+webSubmittedPercentage <-
+    initializePercentSubmittedVia("web",
+                                  stateSubmittedViaPercentage,
+                                  state.regions)
+
+choro = StateChoropleth$new(webSubmittedPercentage)
+choro$title <- "Percentage of Web Submittals"
+choro$ggplot_scale = scale_fill_brewer(palette="Oranges")
 choro$render()
 ```
 
