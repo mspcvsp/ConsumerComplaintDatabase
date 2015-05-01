@@ -129,6 +129,10 @@ if (is.na(file.info(file.path(analyticDataPath,
 }
 load(file=file.path(analyticDataPath,"/ohioMapData.RData"))
 
+# http://stackoverflow.com/questions/20415963/
+#   how-to-increase-the-size-of-points-in-legend-of-ggplot2
+#
+#http://www.cookbook-r.com/Graphs/Legends_(ggplot2)/
 ggmap(ohioMap) + geom_point(aes(x=lon,
                                 y=lat,
                                 colour=issuecateogry,
@@ -136,7 +140,11 @@ ggmap(ohioMap) + geom_point(aes(x=lon,
                                 alpha=0.5,
                                 data=topFiveOhioIssueCategories) +
     scale_color_brewer(palette="Dark2") + 
-    ggtitle('Estimated Top Five Consumer Complaint Issue Cateogries')
+    ggtitle('Estimated Top Five Consumer Complaint Issue Cateogries') +
+    guides(colour = guide_legend(override.aes = list(size=5))) +
+    theme_bw(base_size = 16) +
+    theme(legend.title = element_text(size=14, face="bold")) +
+    theme(legend.text = element_text(size = 12, face = "bold"))
 ggsave("./topFiveOhioIssueCategories.png")
 ```
 
@@ -144,12 +152,12 @@ ggsave("./topFiveOhioIssueCategories.png")
 if (is.na(file.info(file.path(analyticDataPath,
                               "/texasMapData.RData"))[1,"size"])) {
     texasMap <- get_map("texas",zoom=6,source="stamen",maptype="toner")
-    
+
     topFiveTexasIssueCategories <-
         estimateTopFiveStateIssueCategories(trainingData, "TX")
-    
+
     save(texasMap,topFiveTexasIssueCategories,
-         file=file.path(analyticDataPath,"/ohioMapData.RData"))
+         file=file.path(analyticDataPath,"/texasMapData.RData"))
 }
 load(file=file.path(analyticDataPath,"/texasMapData.RData"))
 
@@ -160,11 +168,13 @@ ggmap(texasMap) + geom_point(aes(x=lon,
                                  alpha=0.5,
                                  data=topFiveTexasIssueCategories) +
     scale_color_brewer(palette="Dark2") + 
-    ggtitle('Estimated Top Five Consumer Complaint Issue Cateogries')
+    ggtitle('Estimated Top Five Consumer Complaint Issue Cateogries') +
+    guides(colour = guide_legend(override.aes = list(size=5))) +
+    theme_bw(base_size = 16) +
+    theme(legend.title = element_text(size=14, face="bold")) +
+    theme(legend.text = element_text(size = 12, face = "bold"))
 ggsave("./topFiveTexasIssueCategories.png")
 ```
-
-
 
 
 
