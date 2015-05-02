@@ -57,15 +57,15 @@ createAnalyticDataset <- function(dataDirectory,
                                     maximumPercentMissing=10.0)
     
     complaintData <- cleanData$complaintData
-    percentMissingData <- cleanData$percentMissingData
+    dataStatistics <- cleanData$dataStatistics
     rm(cleanData)
     
     if (!dir.exists(analyticDataPath)) {
         dir.create(analyticDataPath)    
     }
 
-    save(file=file.path(analyticDataPath, "PercentMissingData.RData"),
-         percentMissingData)
+    save(file=file.path(analyticDataPath, "DataStatistics.RData"),
+         dataStatistics)
     
     splitData(analyticDataPath,
               complaintData)
@@ -137,11 +137,11 @@ cleanComplaintData <- function(csvFilePath,
         complaintData[which(complaintData$state %in% continentalUSStates),]
     
     # Remove partial observations
-    percentMissingData <- computePercentMissingData(complaintData)
+    dataStatistics <- computeDataStatistics(complaintData)
     
     dataFrameSegmentation <-
         initializeVariablesToAnalyze(maximumPercentMissing,
-                                     percentMissingData,
+                                     dataStatistics,
                                      complaintData)
 
     complaintData <- complaintData[,dataFrameSegmentation$variables]
@@ -186,7 +186,7 @@ cleanComplaintData <- function(csvFilePath,
 
     isOtherCategory <- complaintData$issuecategory == "other"
     
-    percentMissingData$othercategory <- 100 * sum(isOtherCategory) / 
+    dataStatistics$othercategory <- 100 * sum(isOtherCategory) / 
                                         nrow(complaintData)
     
     complaintData <- complaintData[!isOtherCategory,]
@@ -203,7 +203,7 @@ cleanComplaintData <- function(csvFilePath,
                                       zipcode,
                                       by=c("zipcode","state"))
     
-    percentMissingData$dataframejoin <-
+    dataStatistics$dataframejoin <-
         100 * (1.0 - sum(complete.cases(complaintData)) /
                      nrow(complaintData))
 
@@ -245,7 +245,7 @@ cleanComplaintData <- function(csvFilePath,
         
     cleanData <- list()
     cleanData$complaintData <- complaintData
-    cleanData$percentMissingData <- percentMissingData
+    cleanData$dataStatistics <- dataStatistics
 
     return(cleanData) 
 }
@@ -324,31 +324,34 @@ loadAnalyticData <- function(analyticDataPath,
     return(analyticData)    
 }
 
-loadPercentMissingData <- function(analyticDataPath) {
+loadDataStatistics <- function(analyticDataPath) {
     load(file=file.path(analyticDataPath,
-                        "PercentMissingData.RData"))
+                        "DataStatistics.RData"))
     
-    return(percentMissingData)
+    return(dataStatistics)
 }
 
-computePercentMissingData <- function(complaintData) {
+computeDataStatistics <- function(complaintData) {
     numberObservations <- nrow(complaintData)
-    percentMissingData <- list()
+    dataStatistics <- list()
  
     for (variable in colnames(complaintData)) {
         isVariableMissing <- findMissingObservations(variable,
                                                      complaintData)
         
-        percentMissingData[[variable]] <-
+        dataStatistics[[variable]] <-
             100 * (sum(isVariableMissing) / numberObservations)
     }
     
-    percentMissingData[["numberobservations"]] <- numberObservations
+    dataStatistics[["numberobservations"]] <- numberObservations
 
-    percentMissingData[["numbercompanies"]] <-
+    dataStatistics[["numbercompanies"]] <-
         length(unique(complaintData$company))
     
-    return(percentMissingData)
+    dataStatistics[["numberissues"]] <-
+        length(unique(complaintData$issue))
+    
+    return(dataStatistics)
 }
 
 findMissingObservations <- function(variable,
@@ -371,7 +374,7 @@ findMissingObservations <- function(variable,
 }
 
 initializeVariablesToAnalyze <- function(maximumPercentMissing,
-                                         percentMissingData,
+                                         dataStatistics,
                                          complaintData) {
     dataFrameSegmentation <- list()
     dataFrameSegmentation[["variables"]] <- vector()
@@ -379,8 +382,8 @@ initializeVariablesToAnalyze <- function(maximumPercentMissing,
     dataFrameSegmentation[["isValidRow"]] <-
         !vector(mode="logical", nrow(complaintData))
 
-    for (variable in names(percentMissingData)) {
-        if (percentMissingData[[variable]] <= maximumPercentMissing) {
+    for (variable in names(dataStatistics)) {
+        if (dataStatistics[[variable]] <= maximumPercentMissing) {
             dataFrameSegmentation[["variables"]] <-
                 append(dataFrameSegmentation[["variables"]], variable)
             
@@ -395,8 +398,8 @@ initializeVariablesToAnalyze <- function(maximumPercentMissing,
     return(dataFrameSegmentation)
 }
 
-initializeVariables <- function(percentMissingData) {
-    variables <- names(percentMissingData)
+initializeVariables <- function(dataStatistics) {
+    variables <- names(dataStatistics)
     variables <- variables[!variables %in% c("numberobservations",
                                              "othercategory",
                                              "dataframejoin",
@@ -405,7 +408,7 @@ initializeVariables <- function(percentMissingData) {
     return(variables)
 }
 
-initializePercentMissingDataTable <- function(percentMissingData,
+initializePercentMissingDataTable <- function(dataStatistics,
                                               variables) {
     tableData <- data.frame()
     
@@ -414,7 +417,7 @@ initializePercentMissingDataTable <- function(percentMissingData,
             rbind(tableData,
                   data.frame(variable=key,
                              percentmissing = 
-                                 round(percentMissingData[[key]],1)))
+                                 round(dataStatistics[[key]],1)))
     }
     
     # http://stackoverflow.com/questions/1296646/

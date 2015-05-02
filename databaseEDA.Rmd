@@ -1,29 +1,68 @@
 ---
-title: "Untitled"
-output: ioslides_presentation
+title: "CFPB Consumer Complaint Database Exploratory Data Analysis"
+author: mspcvsp
+date: 05/01/15
+output:
+  ioslides_presentation:
+    widescreen: true
+    smaller: true
+    css: styles.css
 ---
 
-## R Markdown
+## Introduction
+```{r setupEnvironment, echo=FALSE, warning=FALSE, cache=TRUE, message=FALSE}
 
-This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+# http://stackoverflow.com/questions/18931006/
+#   how-to-suppress-warning-messages-when-loading-a-library
+suppressWarnings(library(dplyr))
+suppressWarnings(library(Gmisc))
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+library(caret)
+library(choroplethr)
+library(choroplethrMaps)
+library(data.table)
+library(ggmap)
+library(ggplot2)
+library(lubridate)
+library(RColorBrewer)
+library(zipcode)
 
-## Slide with Bullets
+data(state.regions)
 
-- Bullet 1
-- Bullet 2
-- Bullet 3
+source("./dataCleaning.R")
+source("./dataAnalysis.R")
+set.seed(58978160)
 
-## Slide with R Code and Output
+dataDirectory <- "./Data"
+analyticDataPath <- "./AnalyticData"
+maximumPercentMissing <- 10.0
 
-```{r}
-summary(cars)
+if (is.na(file.info(dataDirectory)[1,"isdir"])) {
+    downloadData(dataDirectory)
+}
+
+if (is.na(file.info(file.path(analyticDataPath,
+                              "/trainingData.csv"))[1,"size"])) {
+    createAnalyticDataset(dataDirectory,
+                          maximumPercentMissing,
+                          analyticDataPath)
+}
+
+trainingData <- loadAnalyticData(analyticDataPath,
+                                 "trainingData.csv")
+
+dataStatistics <- loadDataStatistics(analyticDataPath)
+
+variables <- initializeVariables(dataStatistics)
 ```
+   
+- [Consumer Financial Protection Bureau (CFPB)](http://www.consumerfinance.gov/)
+[Consumer Complaint Database](https://catalog.data.gov/dataset/consumer-complaint-database)
+    * Number of complaints: `r dataStatistics$numberobservations`  
+    * Number of variables: `r length(variables)`  
+    * Number of companies: `r dataStatistics$numbercompanies`  
+    * Number of unique complaint issues: `r dataStatistics$numberissues`
+    * Data retrieved from [Data.gov](https://www.data.gov/)
 
-## Slide with Plot
-
-```{r, echo=FALSE}
-plot(cars)
-```
+## Percent Missing Data
 
