@@ -1,6 +1,19 @@
 downloadData <- function(dataDirectory) {
-    dir.create(dataDirectory)
-    
+    #-------------------------------------------------------------------------
+    # Downloads the Consumer Finanical Protection Bureau Consumer
+    # Compllaint Database
+    #
+    # Args:
+    #   dataDirectory: String that stores the data download directory
+    #                  path
+    #
+    # Returns:
+    #   None
+    #-------------------------------------------------------------------------
+    if (!dir.exists(dataDirectory)) {
+        dir.create(dataDirectory)    
+    }
+
     # Initialize the CFPB Consumer Complaint Database URL
     fileURL <- paste0('https://data.consumerfinance.gov/api/views',
                       '/x94z-ydhh/rows.csv?accessType=DOWNLOAD')
@@ -12,19 +25,45 @@ downloadData <- function(dataDirectory) {
 createAnalyticDataset <- function(dataDirectory,
                                   maximumPercentMissing,
                                   analyticDataPath) {
+    #-------------------------------------------------------------------------
+    # Creates an analytic (i.e. tidy) data set. This process includes:
+    # 1.) Cleaning the CFPB consumer complaint database
+    # 2.) Splitting the data into training, validation, & test sets
+    #
+    # Args:
+    #   dataDirectory: String that stores the data download directory
+    #                  path
+    #
+    #   maximumPercentMissing: Defines the maximum percent of missing
+    #                          data allowed for a variable. 
+    #
+    #   analyticDataPath: String that stores the analytic data directory path
+    #
+    # Returns:
+    #   None
+    #
+    # Technical references:
+    #   https://www.coursera.org/specialization/jhudatascience/1
+    #
+    # http://www.prometheusresearch.com/
+    #   good-data-management-practices-for-data-analysis-tidy-data-part-2/
+    #-------------------------------------------------------------------------
     csvFile <- list.files(path=dataDirectory, pattern="*.csv")
-    
     if (length(csvFile) != 1) {
         simpleError('Number of *.csv files != 1')
     }
 
-    cleanData <- loadComplaintData(csvFilePath="./Data/rows.csv",
-                                   maximumPercentMissing=10.0)
+    cleanData <- cleanComplaintData(file.path(dataDirectory, csvFile),
+                                    maximumPercentMissing=10.0)
     
     complaintData <- cleanData$complaintData
     percentMissingData <- cleanData$percentMissingData
     rm(cleanData)
     
+    if (!dir.exists(analyticDataPath)) {
+        dir.create(analyticDataPath)    
+    }
+
     save(file=file.path(analyticDataPath, "PercentMissingData.RData"),
          percentMissingData)
     
@@ -32,9 +71,55 @@ createAnalyticDataset <- function(dataDirectory,
               complaintData)
 }
 
-loadComplaintData <- function(csvFilePath,
-                              maximumPercentMissing) {
-
+cleanComplaintData <- function(csvFilePath,
+                               maximumPercentMissing) {
+    #-------------------------------------------------------------------------
+    # Transforms the CPFB Consumer Complaint Database into tidy data via
+    # the following operations:
+    #
+    # 1.) Transform the variable names to lower case
+    #
+    # 2.) Remove '.' from variale names
+    #
+    # 3.) Remove U.S. states & territories outside of the continental U.S.
+    #
+    # 4.) Apply a maximum percent missing threshold to remove partial 
+    #     observations
+    #
+    # 5.) Remove whitespace from the company type
+    #
+    # 6.) For each database variable:
+    #     a.) Transform to lower case
+    #     b.) Remove apostrophe (e.g. change cont'd to contd)
+    #     c.) Remove punctuation
+    #     d.) Replace multiple spaces with a single space
+    #
+    # 7.) Remove white space from the company type
+    #
+    # 8.) Aggregate the complaint issues into categories
+    #
+    # 9.) Remove the "other" category
+    #
+    # 10.) Append city, state, latitude, & lognitude to consumer complaint 
+    #      database
+    #
+    # 11.) Add a companyid variable
+    #
+    # 12.) Convert date variables
+    #
+    # 13.) Convert factor variables
+    #
+    # Args:
+    #   csvFilePath: String that stores the CPFB Consumer Complaint Database
+    #                *.csv file path
+    #
+    #   maximumPercentMissing: Defines the maximum percent of missing
+    #                          data allowed for a variable. 
+    #
+    # Returns:
+    #   complaintData: Data frame that stores the transformed CPFB Consumer
+    #                  Complaint Database
+    #-------------------------------------------------------------------------
     complaintData <- read.csv(csvFilePath,
                               header=TRUE,
                               stringsAsFactors=FALSE)
@@ -45,7 +130,7 @@ loadComplaintData <- function(csvFilePath,
     # Remove '.' from variable names
     colnames(complaintData) <- gsub('\\.','',colnames(complaintData))
     
-    # Remove states outside of the continental U.S.
+    # Remove U.S. territories & states outside of the continental U.S.
     continentalUSStates <- append(state.abb, "DC")
 
     complaintData <-
@@ -167,11 +252,28 @@ loadComplaintData <- function(csvFilePath,
 
 splitData <- function(analyticDataPath,
                       complaintData) {
+    #-------------------------------------------------------------------------
+    # Splits the CPFB Consumer Complaint Database into training, validation,
+    # and test data sets stored as *.csv files in the directory defined
+    # by the analyticDataPath input variable
+    #
+    # Args:
+    #   analyticDataPath: String that stores the analytic data directory path
+    #
+    #   complaintData: Data frame that stores the transformed CPFB Consumer
+    #                  Complaint Database
+    #
+    # Returns:
+    #   None
+    # 
+    # Technical References:
+    # --------------------
     # http://stackoverflow.com/questions/13610074/
     #   is-there-a-rule-of-thumb-for-how-to-divide-a-dataset-into-
     #   training-and-validatio
     #
     # http://topepo.github.io/caret/splitting.html
+    #-------------------------------------------------------------------------
     trainIndex <- createDataPartition(complaintData$issue,
                                       p = .8,
                                       list = FALSE,
@@ -222,6 +324,13 @@ loadAnalyticData <- function(analyticDataPath,
     return(analyticData)    
 }
 
+loadPercentMissingData <- function(analyticDataPath) {
+    load(file=file.path(analyticDataPath,
+                        "PercentMissingData.RData"))
+    
+    return(percentMissingData)
+}
+
 computePercentMissingData <- function(complaintData) {
     numberObservations <- nrow(complaintData)
     percentMissingData <- list()
@@ -233,6 +342,11 @@ computePercentMissingData <- function(complaintData) {
         percentMissingData[[variable]] <-
             100 * (sum(isVariableMissing) / numberObservations)
     }
+    
+    percentMissingData[["numberobservations"]] <- numberObservations
+
+    percentMissingData[["numbercompanies"]] <-
+        length(unique(complaintData$company))
     
     return(percentMissingData)
 }
@@ -279,6 +393,15 @@ initializeVariablesToAnalyze <- function(maximumPercentMissing,
     }
 
     return(dataFrameSegmentation)
+}
+
+initializeVariables <- function(percentMissingData) {
+    variables <- names(percentMissingData)
+    variables <- variables[!variables %in% c("numberobservations",
+                                             "othercategory",
+                                             "dataframejoin")]
+    
+    return(variables)
 }
 
 initializeIssueCategorySelection <- function(complaintData) {

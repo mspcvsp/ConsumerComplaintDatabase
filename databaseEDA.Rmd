@@ -35,7 +35,7 @@ set.seed(58978160)
 
 dataDirectory <- "./Data"
 analyticDataPath <- "./AnalyticData"
-maximumPercentMissing <- 10
+maximumPercentMissing <- 10.0
 
 if (is.na(file.info(dataDirectory)[1,"isdir"])) {
     downloadData(dataDirectory)
@@ -44,14 +44,26 @@ if (is.na(file.info(dataDirectory)[1,"isdir"])) {
 if (is.na(file.info(file.path(analyticDataPath,
                               "/trainingData.csv"))[1,"size"])) {
     createAnalyticDataset(dataDirectory,
-                          maximumPercentMissing)
+                          maximumPercentMissing,
+                          analyticDataPath)
 }
+
+trainingData <- loadAnalyticData(analyticDataPath,
+                                 "trainingData.csv")
+
+percentMissingData <- loadPercentMissingData(analyticDataPath)
+
+variables <- initializeVariables(percentMissingData)
 ```
 
-- (Consumer Financial Protection Bureau Consumer Co(mplaint Database)[https://catalog.data.gov/dataset/consumer-complaint-database]
-- 
+- [Consumer Financial Protection Bureau (CFPB)](http://www.consumerfinance.gov/)  
+- [CFPB Consumer Complaint Database](https://catalog.data.gov/dataset/consumer-complaint-database)
+    * Number of complaints: `r percentMissingData$numberobservations`  
+    * Number of variables: `r length(variables)`  
+    * Number of companies: `r percentMissingData$numbercompanies`  
+    * Data retrieved from [Data.gov](https://www.data.gov/)
 
---- .class #id 
+---
 
 ## Slide 2
 
