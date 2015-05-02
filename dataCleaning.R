@@ -399,9 +399,33 @@ initializeVariables <- function(percentMissingData) {
     variables <- names(percentMissingData)
     variables <- variables[!variables %in% c("numberobservations",
                                              "othercategory",
-                                             "dataframejoin")]
+                                             "dataframejoin",
+                                             "numbercompanies")]
     
     return(variables)
+}
+
+initializePercentMissingDataTable <- function(percentMissingData,
+                                              variables) {
+    tableData <- data.frame()
+    
+    for (key in variables) {
+        tableData <-
+            rbind(tableData,
+                  data.frame(variable=key,
+                             percentmissing = 
+                                 round(percentMissingData[[key]],1)))
+    }
+    
+    # http://stackoverflow.com/questions/1296646/how-to-sort-a-dataframe-by-columns-in-r
+    tableData <- tableData[with(tableData,order(-percentmissing)),]
+    
+    tableData$variable <- as.character(tableData$variable)
+    
+    rownames(tableData) <- NULL
+    colnames(tableData) <- c("Variable","% Missing")
+    
+    return(tableData)
 }
 
 initializeIssueCategorySelection <- function(complaintData) {

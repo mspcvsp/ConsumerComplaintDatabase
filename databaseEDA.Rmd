@@ -1,72 +1,29 @@
 ---
-title       : CFPB Consumer Complaint Database Exploratory Data Analysis
-author      : mspcvsp
-framework   : revealjs
-highlighter : highlight.js
-hitheme     : zenburn
-widgets     : [mathjax, bootstrap]
-mode        : selfcontained # {standalone, draft}
-knit        : slidify::knit2slides
----
-# CFPB Consumer Complaint Database Exploratory Data Analysis
-mspcvsp
-05/01/15
-
+title: "Untitled"
+output: ioslides_presentation
 ---
 
-## Introduction
-```{r setupEnvironment, echo=FALSE, warning=FALSE}
-library(dplyr)
-library(lubridate)
-library(caret)
-library(choroplethr)
-library(choroplethrMaps)
-library(data.table)
-library(ggplot2)
-library(RColorBrewer)
-library(ggmap)
-library(zipcode)
+## R Markdown
 
-data(state.regions)
+This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-source("./dataCleaning.R")
-source("./dataAnalysis.R")
-set.seed(58978160)
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
 
-dataDirectory <- "./Data"
-analyticDataPath <- "./AnalyticData"
-maximumPercentMissing <- 10.0
+## Slide with Bullets
 
-if (is.na(file.info(dataDirectory)[1,"isdir"])) {
-    downloadData(dataDirectory)
-}
+- Bullet 1
+- Bullet 2
+- Bullet 3
 
-if (is.na(file.info(file.path(analyticDataPath,
-                              "/trainingData.csv"))[1,"size"])) {
-    createAnalyticDataset(dataDirectory,
-                          maximumPercentMissing,
-                          analyticDataPath)
-}
+## Slide with R Code and Output
 
-trainingData <- loadAnalyticData(analyticDataPath,
-                                 "trainingData.csv")
-
-percentMissingData <- loadPercentMissingData(analyticDataPath)
-
-variables <- initializeVariables(percentMissingData)
+```{r}
+summary(cars)
 ```
 
-- [Consumer Financial Protection Bureau (CFPB)](http://www.consumerfinance.gov/)  
-- [CFPB Consumer Complaint Database](https://catalog.data.gov/dataset/consumer-complaint-database)
-    * Number of complaints: `r percentMissingData$numberobservations`  
-    * Number of variables: `r length(variables)`  
-    * Number of companies: `r percentMissingData$numbercompanies`  
-    * Data retrieved from [Data.gov](https://www.data.gov/)
+## Slide with Plot
 
----
-
-## Slide 2
-
-
-
+```{r, echo=FALSE}
+plot(cars)
+```
 
