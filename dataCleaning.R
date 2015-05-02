@@ -417,7 +417,8 @@ initializePercentMissingDataTable <- function(percentMissingData,
                                  round(percentMissingData[[key]],1)))
     }
     
-    # http://stackoverflow.com/questions/1296646/how-to-sort-a-dataframe-by-columns-in-r
+    # http://stackoverflow.com/questions/1296646/
+    #   how-to-sort-a-dataframe-by-columns-in-r
     tableData <- tableData[with(tableData,order(-percentmissing)),]
     
     tableData$variable <- as.character(tableData$variable)
