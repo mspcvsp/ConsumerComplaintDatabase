@@ -1,0 +1,51 @@
+---
+title       : CFPB Consumer Complaint Database Exploratory Data Analysis
+author      : mspcvsp
+framework   : revealjs
+highlighter : highlight.js
+hitheme     : zenburn
+widgets     : [mathjax, bootstrap]
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+# CFPB Consumer Complaint Database Exploratory Data Analysis
+mspcvsp
+05/01/15
+
+---
+
+## Introduction
+```{r setupEnvironment, echo=FALSE}
+
+# http://stackoverflow.com/questions/18931006/
+#   how-to-suppress-warning-messages-when-loading-a-library
+suppressWarnings(library(dplyr))
+suppressWarnings(library(lubridate))
+
+library(caret)
+library(choroplethr)
+library(choroplethrMaps)
+library(data.table)
+library(ggplot2)
+library(RColorBrewer)
+library(ggmap)
+library(zipcode)
+
+data(state.regions)
+
+source("./dataCleaning.R")
+source("./dataAnalysis.R")
+set.seed(58978160)
+```
+
+1. Edit YAML front matter
+2. Write using R Markdown
+3. Use an empty line followed by three dashes to separate slides!
+
+--- .class #id 
+
+## Slide 2
+
+
+
+

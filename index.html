@@ -1,51 +1,112 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CFPB Consumer Complaint Database Exploratory Data Analysis</title>
+  <meta name="description" content="">
+  <meta name="author" content="mspcvsp">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="stylesheet" href="libraries/frameworks/revealjs/css/reveal.min.css">
+  <link rel="stylesheet" href="libraries/frameworks/revealjs/css/theme/default.css" id="theme">
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/zenburn.css" id="theme">
+  <!--[if lt IE 9]>
+  <script src="lib/js/html5shiv.js"></script>
+  <![endif]-->  <link rel="stylesheet" href = "libraries/widgets/bootstrap/css/bootstrap.css">
+<link rel="stylesheet" href = "assets/css/ribbons.css">
 
-  <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="CFPB Consumer Complaint Database Analysis : Software for analzing the Consumer Financial Protection Bureau Consumer Complaint Database">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <section class='' data-state='' id='slide-1'>
+  <h1>CFPB Consumer Complaint Database Exploratory Data Analysis</h1>
+  <p>mspcvsp
+05/01/15</p>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+</section>
+<section class='' data-state='' id='slide-2'>
+  <h2>Introduction</h2>
+  <pre><code>## Loading required package: lattice
+## Loading required package: ggplot2
+</code></pre>
 
-    <title>CFPB Consumer Complaint Database Analysis</title>
-  </head>
+<pre><code>## Warning in file(filename, &quot;r&quot;, encoding = encoding): cannot open file
+## &#39;./dataCleaning.R&#39;: No such file or directory
+</code></pre>
 
-  <body>
+<pre><code>## Error in file(filename, &quot;r&quot;, encoding = encoding): cannot open the connection
+</code></pre>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/mspcvsp/ConsumerComplaintDatabase">View on GitHub</a>
+<pre><code>## Warning in file(filename, &quot;r&quot;, encoding = encoding): cannot open file
+## &#39;./dataAnalysis.R&#39;: No such file or directory
+</code></pre>
 
-          <h1 id="project_title">CFPB Consumer Complaint Database Analysis</h1>
-          <h2 id="project_tagline">Software for analzing the Consumer Financial Protection Bureau Consumer Complaint Database</h2>
+<pre><code>## Error in file(filename, &quot;r&quot;, encoding = encoding): cannot open the connection
+</code></pre>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/mspcvsp/ConsumerComplaintDatabase/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/mspcvsp/ConsumerComplaintDatabase/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
+<ol>
+<li>Edit YAML front matter</li>
+<li>Write using R Markdown</li>
+<li>Use an empty line followed by three dashes to separate slides!</li>
+</ol>
+
+</section>
+<section class='class' data-state='' id='id'>
+  <h2>Slide 2</h2>
+  
+</section>
     </div>
+  </div>
+</body>
+  <script src="libraries/frameworks/revealjs/lib/js/head.min.js"></script>
+  <script src="libraries/frameworks/revealjs/js/reveal.min.js"></script>
+  <script>
+  // Full list of configuration options available here:
+  // https://github.com/hakimel/reveal.js#configuration
+  Reveal.initialize({
+    controls: true,
+    progress: true,
+    history: true,
+    center: true,
+    theme: Reveal.getQueryHash().theme || 'default', 
+    transition: Reveal.getQueryHash().transition || 'default', 
+    dependencies: [
+    // Cross-browser shim that fully implements classList -
+    // https://github.com/eligrey/classList.js/
+      { src: 'libraries/frameworks/revealjs/lib/js/classList.js', condition: function() { return !document.body.classList;}},
+      // Zoom in and out with Alt+click
+      { src: 'libraries/frameworks/revealjs/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+      // Speaker notes
+      { src: 'libraries/frameworks/revealjs/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+      // Remote control your reveal.js presentation using a touch device
+      //{ src: 'libraries/frameworks/revealjs/plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+      ]
+  });
+  </script>  <!-- MathJax: Fall back to local if CDN offline but local image fonts are not supported (saves >100MB) -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- <script src="https://c328740.ssl.cf1.rackcdn.com/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script> -->
+<script>window.MathJax || document.write('<script type="text/x-mathjax-config">MathJax.Hub.Config({"HTML-CSS":{imageFont:null}});<\/script><script src="libraries/widgets/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')
+</script>
+<script>  
+$(function (){ 
+  $("#example").popover(); 
+  $("[rel='tooltip']").tooltip(); 
+});  
+</script>  
+<!-- LOAD HIGHLIGHTER JS FILES -->
+<script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<!-- DONE LOADING HIGHLIGHTER JS FILES -->
+ 
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <p><a href="https://catalog.data.gov/dataset/consumer-complaint-database">Consumer Financial Protection Bureau Consumer Complaint Database</a> </p>
-
-<p>Data retrieved from <a href="https://www.data.gov/">Data.gov</a></p>
-      </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">CFPB Consumer Complaint Database Analysis maintained by <a href="https://github.com/mspcvsp">mspcvsp</a></p>
-        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
-
-    
-
-  </body>
 </html>
