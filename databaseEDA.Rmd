@@ -15,13 +15,9 @@ mspcvsp
 ---
 
 ## Introduction
-```{r setupEnvironment, echo=FALSE}
-
-# http://stackoverflow.com/questions/18931006/
-#   how-to-suppress-warning-messages-when-loading-a-library
-suppressWarnings(library(dplyr))
-suppressWarnings(library(lubridate))
-
+```{r setupEnvironment, echo=FALSE, warning=FALSE}
+library(dplyr)
+library(lubridate)
 library(caret)
 library(choroplethr)
 library(choroplethrMaps)
@@ -36,11 +32,24 @@ data(state.regions)
 source("./dataCleaning.R")
 source("./dataAnalysis.R")
 set.seed(58978160)
+
+dataDirectory <- "./Data"
+analyticDataPath <- "./AnalyticData"
+maximumPercentMissing <- 10
+
+if (is.na(file.info(dataDirectory)[1,"isdir"])) {
+    downloadData(dataDirectory)
+}
+
+if (is.na(file.info(file.path(analyticDataPath,
+                              "/trainingData.csv"))[1,"size"])) {
+    createAnalyticDataset(dataDirectory,
+                          maximumPercentMissing)
+}
 ```
 
-1. Edit YAML front matter
-2. Write using R Markdown
-3. Use an empty line followed by three dashes to separate slides!
+- (Consumer Financial Protection Bureau Consumer Co(mplaint Database)[https://catalog.data.gov/dataset/consumer-complaint-database]
+- 
 
 --- .class #id 
 

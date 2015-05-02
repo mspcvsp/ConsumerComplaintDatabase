@@ -1,3 +1,37 @@
+downloadData <- function(dataDirectory) {
+    dir.create(dataDirectory)
+    
+    # Initialize the CFPB Consumer Complaint Database URL
+    fileURL <- paste0('https://data.consumerfinance.gov/api/views',
+                      '/x94z-ydhh/rows.csv?accessType=DOWNLOAD')
+    
+    download.file(fileURL, destfile=file.path(dataDirectory,
+                                              "/rows.csv"), method="curl")
+}
+
+createAnalyticDataset <- function(dataDirectory,
+                                  maximumPercentMissing,
+                                  analyticDataPath) {
+    csvFile <- list.files(path=dataDirectory, pattern="*.csv")
+    
+    if (length(csvFile) != 1) {
+        simpleError('Number of *.csv files != 1')
+    }
+
+    cleanData <- loadComplaintData(csvFilePath="./Data/rows.csv",
+                                   maximumPercentMissing=10.0)
+    
+    complaintData <- cleanData$complaintData
+    percentMissingData <- cleanData$percentMissingData
+    rm(cleanData)
+    
+    save(file=file.path(analyticDataPath, "PercentMissingData.RData"),
+         percentMissingData)
+    
+    splitData(analyticDataPath,
+              complaintData)
+}
+
 loadComplaintData <- function(csvFilePath,
                               maximumPercentMissing) {
 
@@ -175,6 +209,17 @@ splitData <- function(analyticDataPath,
     write.csv(file=file.path(analyticDataPath, "testData.csv"),
               testData,
               row.names=FALSE)
+}
+
+loadAnalyticData <- function(analyticDataPath,
+                             analyticDataFile) {
+    analyticData <- read.csv(file.path(analyticDataPath,
+                                       analyticDataFile),
+                             header=TRUE)
+    
+    analyticData$companyid <- as.factor(as.character(analyticData$companyid))
+    
+    return(analyticData)    
 }
 
 computePercentMissingData <- function(complaintData) {
