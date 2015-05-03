@@ -105,7 +105,7 @@ percentDataRemoved <-
 - Convert factor variables
 - Percentage of data removed during data cleaning: `r percentDataRemoved`%
 
-## Percent Missing Data
+## Database Variable Percentage of Missing Data
 ```{r initializePercentMissingTable, echo=FALSE}
 percentMissingTableData <- initializePercentMissingDataTable(dbDataStatistics)
 ```
@@ -137,3 +137,12 @@ print(xtable(percentMissingTableData),
 ```
   
 ## Exploratory Data Analysis
+```{r exploratoryDataAnalysis1, echo=FALSE, results='asis'}
+summaryIssueCategoryPercentage <-
+    initializeSummaryIssueCategoryPercentage(trainingData)
+
+print(xtable(summaryIssueCategoryPercentage),
+      type="html",
+      include.rownames=FALSE,
+      html.table.attributes="class='table-bordered'")
+```

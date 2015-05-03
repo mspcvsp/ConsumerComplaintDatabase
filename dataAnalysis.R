@@ -1,3 +1,22 @@
+initializeSummaryIssueCategoryPercentage <- function(complaintData) {
+    summaryTableData <- table(complaintData$issuecategory)
+    
+    summaryTableData <- round(data.frame(sort(100 * summaryTableData / 
+                                              sum(summaryTableData),
+                                              decreasing=TRUE)),1)
+    
+    summaryTableData$issuecategory <- rownames(summaryTableData)
+    
+    rownames(summaryTableData) <- NULL
+    
+    colnames(summaryTableData) <- c("percentoccurence", "issuecategory")
+    
+    summaryTableData <- summaryTableData[,c("issuecategory",
+                                            "percentoccurence")]
+    
+    return(summaryTableData)
+}
+
 computeStateIssueCategoryPercentage <- function(complaintData) {
     issueCategoryPercentage <- data.frame()
     
