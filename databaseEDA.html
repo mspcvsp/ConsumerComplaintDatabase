@@ -118,12 +118,12 @@
 </article></slide><slide class=''><hgroup><h2>Data Cleaning</h2></hgroup><article  id="data-cleaning" class="smaller columns-2">
 
 <ul>
-<li>1.) Transform the variable names to lower case</li>
-<li>2.) Remove &#39;.&#39; from variale names</li>
-<li>3.) Remove U.S. states &amp; territories outside of the continental U.S.</li>
-<li>4.) Apply a maximum percent missing threshold to remove partial observations</li>
-<li>5.) Remove whitespace from the company type</li>
-<li>6.) For each database variable:
+<li>Transform the variable names to lower case</li>
+<li>Remove &#39;.&#39; from variale names</li>
+<li>Remove U.S. states &amp; territories outside of the continental U.S.</li>
+<li>Apply a maximum percent missing threshold to remove partial observations</li>
+<li>Remove whitespace from the company type</li>
+<li>For each database variable:
 
 <ul>
 <li>Transform to lower case</li>
@@ -131,13 +131,14 @@
 <li>Remove punctuation</li>
 <li>Replace multiple spaces with a single space</li>
 </ul></li>
-<li>7.) Remove white space from the company type</li>
-<li>8.) Aggregate the complaint issues into 12 categories</li>
-<li>9.) Remove the &quot;other&quot; category</li>
-<li>10.) Append city, state, latitude, &amp; lognitude</li>
-<li>11.) Add a companyid variable</li>
-<li>12.) Convert date variables</li>
-<li>13.) Convert factor variables</li>
+<li>Remove white space from the company type</li>
+<li>Aggregate the complaint issues into 12 categories</li>
+<li>Remove the &quot;other&quot; category</li>
+<li>Append city, state, latitude, &amp; lognitude from the <a href='https://jeffreybreen.wordpress.com/2011/01/05/cran-zipcode/' title=''>zipcode R package</a></li>
+<li>Add a companyid variable</li>
+<li>Convert date variables</li>
+<li>Convert factor variables</li>
+<li>Percentage of data removed during data cleaning: 11.4%</li>
 </ul>
 
 </article></slide><slide class=''><hgroup><h2>Percent Missing Data</h2></hgroup><article  id="percent-missing-data" class="smaller ">
@@ -148,7 +149,7 @@
 
 <!-- html table generated in R 3.2.0 by xtable 1.7-4 package -->
 
-<!-- Sun May  3 08:21:09 2015 -->
+<!-- Sun May  3 08:32:28 2015 -->
 
 <table class="table-bordered">
 

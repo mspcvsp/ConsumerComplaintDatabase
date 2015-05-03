@@ -76,24 +76,34 @@ dbVariables <- initializeVariables(dbDataStatistics)
     * Plotting zipcode-level statistics using the [ggmap package](http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf)
 
 ## Data Cleaning {.columns-2}
-- 1.) Transform the variable names to lower case
-- 2.) Remove '.' from variale names
-- 3.) Remove U.S. states & territories outside of the continental U.S.
-- 4.) Apply a maximum percent missing threshold to remove partial observations
-- 5.) Remove whitespace from the company type
-- 6.) For each database variable:
+```{r dataCleaning, echo=FALSE}
+numCleanObservations <- nrow(trainingData) +
+                        nrow(validationData) +
+                        nrow(testData)
+
+percentDataRemoved <-
+    round(100*(dbDataStatistics$numberobservations - numCleanObservations) / 
+          dbDataStatistics$numberobservations,1)
+```
+- Transform the variable names to lower case
+- Remove '.' from variale names
+- Remove U.S. states & territories outside of the continental U.S.
+- Apply a maximum percent missing threshold to remove partial observations
+- Remove whitespace from the company type
+- For each database variable:
     * Transform to lower case
     * Remove apostrophe (e.g. change cont'd to contd)
     * Remove punctuation
     * Replace multiple spaces with a single space
-- 7.) Remove white space from the company type
-- 8.) Aggregate the complaint issues into 
+- Remove white space from the company type
+- Aggregate the complaint issues into 
 `r length(levels(trainingData$issuecategory))` categories
-- 9.) Remove the "other" category
-- 10.) Append city, state, latitude, & lognitude
-- 11.) Add a companyid variable
-- 12.) Convert date variables
-- 13.) Convert factor variables
+- Remove the "other" category
+- Append city, state, latitude, & lognitude from the [zipcode R package](https://jeffreybreen.wordpress.com/2011/01/05/cran-zipcode/)
+- Add a companyid variable
+- Convert date variables
+- Convert factor variables
+- Percentage of data removed during data cleaning: `r percentDataRemoved`%
 
 ## Percent Missing Data
 ```{r initializePercentMissingTable, echo=FALSE}
