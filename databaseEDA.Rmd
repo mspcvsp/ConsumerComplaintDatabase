@@ -11,24 +11,6 @@ output:
 
 ## Introduction
 ```{r setupEnvironment, echo=FALSE, cache=TRUE, warning=FALSE, message=FALSE}
-
-# http://stackoverflow.com/questions/18931006/
-#   how-to-suppress-warning-messages-when-loading-a-library
-suppressWarnings(library(dplyr))
-suppressWarnings(library(Gmisc))
-
-library(caret)
-library(choroplethr)
-library(choroplethrMaps)
-library(data.table)
-library(ggmap)
-library(ggplot2)
-library(lubridate)
-library(RColorBrewer)
-library(zipcode)
-
-data(state.regions)
-
 source("./dataCleaning.R")
 source("./dataAnalysis.R")
 set.seed(58978160)
@@ -87,7 +69,7 @@ percentDataRemoved <-
 ```
 - Transform the variable names to lower case
 - Remove '.' from variale names
-- Remove U.S. states & territories outside of the continental U.S.
+- Exclude data from U.S. territories
 - Apply a maximum percent missing threshold to remove partial observations
 - Remove whitespace from the company type
 - For each database variable:
@@ -168,9 +150,14 @@ mortgagePercentage <- initializePercentIssue("mortgage",
 stateSubmittedViaPercentage <-
     computeStateSubmittedViaPercentage(trainingData)
 ```
-- Percentage of mortage-related consumer complaints for each state in the 
-contiental U.S.
+- Percentage of mortage-related consumer complaints for each U.S. state 
+[choropleth](http://blog.crisis.net/choropleth-maps-with-d3/)
+  
 ```{r eda4, echo=FALSE}
+library(choroplethr)
+library(choroplethrMaps)
+library(ggplot2)
+library(RColorBrewer)
 # http://cran.r-project.org/web/packages/choroplethr/vignettes/
 #   b-state-choropleth.html
 choro = StateChoropleth$new(mortgagePercentage)

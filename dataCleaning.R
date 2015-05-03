@@ -1,3 +1,16 @@
+# http://stackoverflow.com/questions/18931006/
+#   how-to-suppress-warning-messages-when-loading-a-library
+suppressWarnings(library(dplyr))
+suppressWarnings(library(Gmisc))
+
+library(caret)
+library(data.table)
+library(ggmap)
+library(lubridate)
+library(zipcode)
+
+data(state.regions)
+
 downloadData <- function(dataDirectory) {
     #-------------------------------------------------------------------------
     # Downloads the Consumer Finanical Protection Bureau Consumer
@@ -81,7 +94,7 @@ cleanComplaintData <- function(csvFilePath,
     #
     # 2.) Remove '.' from variale names
     #
-    # 3.) Remove U.S. states & territories outside of the continental U.S.
+    # 3.) Exclude data from U.S. territories
     #
     # 4.) Apply a maximum percent missing threshold to remove partial 
     #     observations
@@ -129,7 +142,7 @@ cleanComplaintData <- function(csvFilePath,
     # Remove '.' from variable names
     colnames(complaintData) <- gsub('\\.','',colnames(complaintData))
     
-    # Remove U.S. territories & states outside of the continental U.S.
+    # Exclude data from U.S. territories
     continentalUSStates <- append(state.abb, "DC")
 
     complaintData <-
