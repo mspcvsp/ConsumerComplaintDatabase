@@ -10,7 +10,7 @@ output:
 ---
 
 ## Introduction
-```{r setupEnvironment, echo=FALSE, warning=FALSE, cache=FALSE, message=FALSE}
+```{r setupEnvironment, echo=FALSE, warning=FALSE, message=FALSE}
 
 # http://stackoverflow.com/questions/18931006/
 #   how-to-suppress-warning-messages-when-loading-a-library
@@ -62,11 +62,31 @@ variables <- initializeVariables(dataStatistics)
     * Number of variables: `r length(variables)`  
     * Number of companies: `r dataStatistics$numbercompanies`  
     * Number of unique complaint issues: `r dataStatistics$numberissues`
-    * Data retrieved from [Data.gov](https://www.data.gov/)
+    * Data retrieved from [Data.gov](https://www.data.gov/)  
+  
 - Topics covered in this presentation
     * Data cleaning
     * Visualization of state-level statistics via [chroopleths](https://github.com/trulia/choroplethr)
     * Plotting zipcode-level statistics using the [ggmap package](http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf)
+
+## Data Cleaning {.columns-2}
+- 1.) Transform the variable names to lower case
+- 2.) Remove '.' from variale names
+- 3.) Remove U.S. states & territories outside of the continental U.S.
+- 4.) Apply a maximum percent missing threshold to remove partial observations
+- 5.) Remove whitespace from the company type
+- 6.) For each database variable:
+    * Transform to lower case
+    * Remove apostrophe (e.g. change cont'd to contd)
+    * Remove punctuation
+    * Replace multiple spaces with a single space
+- 7.) Remove white space from the company type
+- 8.) Aggregate the complaint issues into categories
+- 9.) Remove the "other" category
+- 10.) Append city, state, latitude, & lognitude
+- 11.) Add a companyid variable
+- 12.) Convert date variables
+- 13.) Convert factor variables
 
 ## Percent Missing Data
 ```{r initializePercentMissingTable, echo=FALSE}

@@ -100,8 +100,7 @@ cleanComplaintData <- function(csvFilePath,
     #
     # 9.) Remove the "other" category
     #
-    # 10.) Append city, state, latitude, & lognitude to consumer complaint 
-    #      database
+    # 10.) Append city, state, latitude, & lognitude
     #
     # 11.) Add a companyid variable
     #
