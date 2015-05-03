@@ -51,6 +51,12 @@ if (is.na(file.info(file.path(analyticDataPath,
 trainingData <- loadAnalyticData(analyticDataPath,
                                  "trainingData.csv")
 
+validationData <- loadAnalyticData(analyticDataPath,
+                                   "validationData.csv")
+
+testData <- loadAnalyticData(analyticDataPath,
+                             "testData.csv")
+
 dbDataStatistics <- loadDataStatistics(analyticDataPath)
 
 dbVariables <- initializeVariables(dbDataStatistics)
@@ -81,7 +87,8 @@ dbVariables <- initializeVariables(dbDataStatistics)
     * Remove punctuation
     * Replace multiple spaces with a single space
 - 7.) Remove white space from the company type
-- 8.) Aggregate the complaint issues into categories
+- 8.) Aggregate the complaint issues into 
+`r length(levels(trainingData$issuecategory))` categories
 - 9.) Remove the "other" category
 - 10.) Append city, state, latitude, & lognitude
 - 11.) Add a companyid variable
@@ -118,3 +125,5 @@ print(xtable(percentMissingTableData),
       include.rownames=FALSE,
       html.table.attributes="class='table-bordered'")
 ```
+  
+## Exploratory Data Analysis
