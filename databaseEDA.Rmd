@@ -51,17 +51,17 @@ if (is.na(file.info(file.path(analyticDataPath,
 trainingData <- loadAnalyticData(analyticDataPath,
                                  "trainingData.csv")
 
-dataStatistics <- loadDataStatistics(analyticDataPath)
+dbDataStatistics <- loadDataStatistics(analyticDataPath)
 
-variables <- initializeVariables(dataStatistics)
+dbVariables <- initializeVariables(dbDataStatistics)
 ```
    
 - [Consumer Financial Protection Bureau (CFPB)](http://www.consumerfinance.gov/)
 [Consumer Complaint Database](https://catalog.data.gov/dataset/consumer-complaint-database)
-    * Number of complaints: `r dataStatistics$numberobservations`  
-    * Number of variables: `r length(variables)`  
-    * Number of companies: `r dataStatistics$numbercompanies`  
-    * Number of unique complaint issues: `r dataStatistics$numberissues`
+    * Number of complaints: `r dbDataStatistics$numberobservations`  
+    * Number of variables: `r length(dbVariables)`  
+    * Number of companies: `r dbDataStatistics$numbercompanies`  
+    * Number of unique complaint issues: `r dbDataStatistics$numberissues`
     * Data retrieved from [Data.gov](https://www.data.gov/)  
   
 - Topics covered in this presentation
@@ -90,10 +90,10 @@ variables <- initializeVariables(dataStatistics)
 
 ## Percent Missing Data
 ```{r initializePercentMissingTable, echo=FALSE}
-tableData <- initializePercentMissingDataTable(dataStatistics)
+percentMissingTableData <- initializePercentMissingDataTable(dbDataStatistics)
 ```
-- Results suggest `r sum(tableData[,2] > maximumPercentMissing)` variables
-exceed the maximum percentage of missing data threshold of
+- Results suggest `r sum(percentMissingTableData[,2] > maximumPercentMissing)`
+variables exceed the maximum percentage of missing data threshold of
 `r maximumPercentMissing` %.  
   
 ```{r displayPercentMissingTable, echo=FALSE, results='asis'}
@@ -113,7 +113,7 @@ library(xtable)
 #   remove-data-frame-row-names-when-using-xtable
 #
 # http://www.granneman.com/webdev/coding/css/centertables/
-print(xtable(tableData),
+print(xtable(percentMissingTableData),
       type="html",
       include.rownames=FALSE,
       html.table.attributes="class='table-bordered'")
