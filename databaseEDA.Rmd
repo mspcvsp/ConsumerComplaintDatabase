@@ -67,25 +67,25 @@ percentDataRemoved <-
     round(100*(dbDataStatistics$numberobservations - numCleanObservations) / 
           dbDataStatistics$numberobservations,1)
 ```
-- Transform the variable names to lower case
-- Remove '.' from variale names
-- Exclude data from U.S. territories
-- Apply a maximum percent missing threshold to remove partial observations
-- Remove whitespace from the company type
-- For each database variable:
-    * Transform to lower case
-    * Remove apostrophe (e.g. change cont'd to contd)
-    * Remove punctuation
-    * Replace multiple spaces with a single space
-- Remove white space from the company type
+- Transform the variable names to lower case  
+- Remove '.' from variale names  
+- Exclude data from U.S. territories  
+- Apply a maximum percent missing threshold to remove partial observations  
+- Remove whitespace from the company type  
+- For each database variable:  
+    * Transform to lower case  
+    * Remove apostrophe (e.g. change cont'd to contd)  
+    * Remove punctuation  
+    * Replace multiple spaces with a single space  
+- Remove white space from the company type  
 - Aggregate the complaint issues into 
-`r length(levels(trainingData$issuecategory))` categories
-- Remove the "other" category
-- Append city, state, latitude, & lognitude from the [zipcode R package](https://jeffreybreen.wordpress.com/2011/01/05/cran-zipcode/)
-- Add a companyid variable
-- Convert date variables
-- Convert factor variables
-- Percentage of data removed during data cleaning: `r percentDataRemoved`%
+`r length(levels(trainingData$issuecategory))` categories  
+- Remove the "other" category  
+- Append city, state, latitude, & lognitude from the [zipcode R package](https://jeffreybreen.wordpress.com/2011/01/05/cran-zipcode/)  
+- Add a companyid variable  
+- Convert date variables  
+- Convert factor variables  
+- Percentage of data removed during data cleaning: `r percentDataRemoved`%  
 
 ## Database Variable Percentage of Missing Data
 ```{r initializePercentMissingTable, echo=FALSE}
