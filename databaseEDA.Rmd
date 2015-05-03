@@ -137,12 +137,44 @@ print(xtable(percentMissingTableData),
 ```
   
 ## Exploratory Data Analysis
-```{r exploratoryDataAnalysis1, echo=FALSE, results='asis'}
+```{r eda1, echo=FALSE, results='asis'}
 summaryIssueCategoryPercentage <-
     initializeSummaryIssueCategoryPercentage(trainingData)
 
+topFiveIssueCategories <- summaryIssueCategoryPercentage[1:5,
+                                                         c("issuecategory")]
+```
+- Results suggest that `r topFiveIssueCategories[1]`, 
+`r topFiveIssueCategories[2]`, `r topFiveIssueCategories[3]`, 
+`r topFiveIssueCategories[4]`, & `r topFiveIssueCategories[5]` are the top five
+consumer complaint issue categories
+  
+```{r eda2, echo=FALSE, results='asis'}
 print(xtable(summaryIssueCategoryPercentage),
       type="html",
       include.rownames=FALSE,
       html.table.attributes="class='table-bordered'")
+```
+
+## Exploratory Data Analysis (cont.)
+```{r eda3, echo=FALSE}
+stateIssueCategoryPercentage <-
+    computeStateIssueCategoryPercentage(trainingData)
+
+mortgagePercentage <- initializePercentIssue("mortgage",
+                                             stateIssueCategoryPercentage,
+                                             state.regions)
+
+stateSubmittedViaPercentage <-
+    computeStateSubmittedViaPercentage(trainingData)
+```
+- Percentage of mortage-related consumer complaints for each state in the 
+contiental U.S.
+```{r eda4, echo=FALSE}
+# http://cran.r-project.org/web/packages/choroplethr/vignettes/
+#   b-state-choropleth.html
+choro = StateChoropleth$new(mortgagePercentage)
+choro$title <- "Percentage of Mortgage Complaints"
+choro$ggplot_scale = scale_fill_brewer(palette="PuBuGn")
+choro$render()
 ```
