@@ -4,7 +4,6 @@ author: mspcvsp
 date: 05/01/15
 output:
   ioslides_presentation:
-    widescreen: true
     smaller: true
     css: styles.css
 ---
@@ -57,7 +56,7 @@ dbVariables <- initializeVariables(dbDataStatistics)
     * Visualization of state-level statistics via [chroopleths](https://github.com/trulia/choroplethr)
     * Plotting zipcode-level statistics using the [ggmap package](http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf)
 
-## Data Cleaning {.columns-2}
+## Data Cleaning
 ```{r dataCleaning, echo=FALSE}
 numCleanObservations <- nrow(trainingData) +
                         nrow(validationData) +
@@ -74,9 +73,11 @@ percentDataRemoved <-
 - Remove whitespace from the company type  
 - For each database variable:  
     * Transform to lower case  
-    * Remove apostrophe (e.g. change cont'd to contd)  
+    * Remove apostrophe (e.g. change cont'd to contd)
     * Remove punctuation  
     * Replace multiple spaces with a single space  
+  
+## Data Cleaning (cont.)
 - Remove white space from the company type  
 - Aggregate the complaint issues into 
 `r length(levels(trainingData$issuecategory))` categories  
@@ -87,7 +88,7 @@ percentDataRemoved <-
 - Convert factor variables  
 - Percentage of data removed during data cleaning: `r percentDataRemoved`%  
 
-## Database Variable Percentage of Missing Data
+## Percentage of Missing Data
 ```{r initializePercentMissingTable, echo=FALSE}
 percentMissingTableData <- initializePercentMissingDataTable(dbDataStatistics)
 ```
