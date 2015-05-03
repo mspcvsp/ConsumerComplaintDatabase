@@ -10,7 +10,7 @@ output:
 ---
 
 ## Introduction
-```{r setupEnvironment, echo=FALSE, warning=FALSE, cache=TRUE, message=FALSE}
+```{r setupEnvironment, echo=FALSE, warning=FALSE, cache=FALSE, message=FALSE}
 
 # http://stackoverflow.com/questions/18931006/
 #   how-to-suppress-warning-messages-when-loading-a-library
@@ -63,6 +63,38 @@ variables <- initializeVariables(dataStatistics)
     * Number of companies: `r dataStatistics$numbercompanies`  
     * Number of unique complaint issues: `r dataStatistics$numberissues`
     * Data retrieved from [Data.gov](https://www.data.gov/)
+- Topics covered in this presentation
+    * Data cleaning
+    * Visualization of state-level statistics via [chroopleths](https://github.com/trulia/choroplethr)
+    * Plotting zipcode-level statistics using the [ggmap package](http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf)
 
 ## Percent Missing Data
-
+```{r initializePercentMissingTable, echo=FALSE}
+tableData <- initializePercentMissingDataTable(dataStatistics)
+```
+- Results suggest `r sum(tableData[,2] > maximumPercentMissing)` variables
+exceed the maximum percentage of missing data threshold of
+`r maximumPercentMissing` %.  
+  
+```{r displayPercentMissingTable, echo=FALSE, results='asis'}
+library(xtable)
+# Technical references:
+# -------------------
+# http://stackoverflow.com/questions/20200082/formatting-html-table-in-r
+#
+# http://stackoverflow.com/questions/21291762/
+#   css-how-to-define-a-class-for-table-to-control-the-style-of-table-rows
+#
+# http://www.w3schools.com/css/css_table.asp
+#
+# http://cssmenumaker.com/blog/stylish-css-tables-tutorial
+#
+# http://stackoverflow.com/questions/5430338/
+#   remove-data-frame-row-names-when-using-xtable
+#
+# http://www.granneman.com/webdev/coding/css/centertables/
+print(xtable(tableData),
+      type="html",
+      include.rownames=FALSE,
+      html.table.attributes="class='table-bordered'")
+```

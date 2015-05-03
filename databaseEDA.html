@@ -75,7 +75,7 @@
 
   </style>
 
-  <link href="data:text/css,%2Etable%2Dbordered%20table%20%7B%0Acolor%3A%20%23333%3B%0Afont%2Dfamily%3A%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0Aborder%2Dspacing%3A%200%3B%0A%7D%0A%0A%2Etable%2Dbordered%20td%2C%20th%20%7B%0Aborder%3A%201px%20solid%20%23CCC%3B%0Aheight%3A%2030px%3B%0A%7D%0A%0A%2Etable%2Dbordered%20th%20%7B%0Abackground%3A%20%23F3F3F3%3B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0A%0A%2Etable%2Dbordered%20td%20%7B%0Abackground%22%3A%20%23FAFAFA%3B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A" rel="stylesheet" type="text/css" />
+  <link href="data:text/css,%2Etable%2Dbordered%20table%20%7B%0Acolor%3A%20%23333%3B%0Afont%2Dfamily%3A%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0Aborder%2Dspacing%3A%200%3B%0A%7D%0A%0A%2Etable%2Dbordered%20td%2C%20th%20%7B%0Aborder%3A%201px%20solid%20%23CCC%3B%0Aheight%3A%2020px%3B%0A%7D%0A%0A%2Etable%2Dbordered%20th%20%7B%0Abackground%3A%20%23F3F3F3%3B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0A%0A%2Etable%2Dbordered%20td%20%7B%0Abackground%22%3A%20%23FAFAFA%3B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A" rel="stylesheet" type="text/css" />
 
 
 </head>
@@ -101,14 +101,273 @@
 
 <ul>
 <li>Number of complaints: 377850<br/></li>
-<li>Number of variables: 15<br/></li>
+<li>Number of variables: 14<br/></li>
 <li>Number of companies: 2850<br/></li>
 <li>Number of unique complaint issues: 96</li>
 <li>Data retrieved from <a href='https://www.data.gov/' title=''>Data.gov</a></li>
 </ul></li>
+<li>Topics covered in this presentation
+
+<ul>
+<li>Data cleaning</li>
+<li>Visualization of state-level statistics via <a href='https://github.com/trulia/choroplethr' title=''>chroopleths</a></li>
+<li>Plotting zipcode-level statistics using the <a href='http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf' title=''>ggmap package</a></li>
+</ul></li>
 </ul>
 
-</article></slide><slide class=''><hgroup><h2>Percent Missing Data</h2></hgroup><article  id="percent-missing-data" class="smaller "></article></slide>
+</article></slide><slide class=''><hgroup><h2>Percent Missing Data</h2></hgroup><article  id="percent-missing-data" class="smaller ">
+
+<ul>
+<li>Results suggest 2 variables exceed the maximum percentage of missing data threshold of 10 %.</li>
+</ul>
+
+<!-- html table generated in R 3.2.0 by xtable 1.7-4 package -->
+
+<!-- Sat May  2 20:54:52 2015 -->
+
+<table class="table-bordered">
+
+<tr>
+
+<th>
+
+Variable
+
+</th>
+
+<th>
+
+% Missing
+
+</th>
+
+</tr>
+
+<tr>
+
+<td>
+
+subissue
+
+</td>
+
+<td align="right">
+
+69.50
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+subproduct
+
+</td>
+
+<td align="right">
+
+31.00
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+consumerdisputed
+
+</td>
+
+<td align="right">
+
+8.40
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+zipcode
+
+</td>
+
+<td align="right">
+
+0.50
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+complaintid
+
+</td>
+
+<td align="right">
+
+0.00
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+product
+
+</td>
+
+<td align="right">
+
+0.00
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+issue
+
+</td>
+
+<td align="right">
+
+0.00
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+state
+
+</td>
+
+<td align="right">
+
+0.00
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+submittedvia
+
+</td>
+
+<td align="right">
+
+0.00
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+datereceived
+
+</td>
+
+<td align="right">
+
+0.00
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+datesenttocompany
+
+</td>
+
+<td align="right">
+
+0.00
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+company
+
+</td>
+
+<td align="right">
+
+0.00
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+companyresponse
+
+</td>
+
+<td align="right">
+
+0.00
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+timelyresponse
+
+</td>
+
+<td align="right">
+
+0.00
+
+</td>
+
+</tr>
+
+</table></article></slide>
 
 
   <slide class="backdrop"></slide>

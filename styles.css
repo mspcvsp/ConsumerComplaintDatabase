@@ -1,0 +1,21 @@
+.table-bordered table {
+color: #333;
+font-family: Helvetica, Arial, sans-serif;
+border-collapse: collapse;
+border-spacing: 0;
+}
+
+.table-bordered td, th {
+border: 1px solid #CCC;
+height: 20px;
+}
+
+.table-bordered th {
+background: #F3F3F3;
+font-weight: bold;
+}
+
+.table-bordered td {
+background": #FAFAFA;
+text-align: center;
+}

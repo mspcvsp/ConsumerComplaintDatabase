@@ -403,13 +403,15 @@ initializeVariables <- function(dataStatistics) {
     variables <- variables[!variables %in% c("numberobservations",
                                              "othercategory",
                                              "dataframejoin",
-                                             "numbercompanies")]
+                                             "numbercompanies",
+                                             "numberissues")]
     
     return(variables)
 }
 
-initializePercentMissingDataTable <- function(dataStatistics,
-                                              variables) {
+initializePercentMissingDataTable <- function(dataStatistics) {
+    variables <- initializeVariables(dataStatistics)
+    
     tableData <- data.frame()
     
     for (key in variables) {
@@ -429,8 +431,8 @@ initializePercentMissingDataTable <- function(dataStatistics,
     rownames(tableData) <- NULL
     colnames(tableData) <- c("Variable","% Missing")
     
-    return(tableData)
-}
+    return(tableData)    
+} 
 
 initializeIssueCategorySelection <- function(complaintData) {
     categorySelection <- list()
