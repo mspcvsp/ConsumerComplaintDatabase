@@ -10,7 +10,7 @@ output:
 ---
 
 ## Introduction
-```{r setupEnvironment, echo=FALSE, warning=FALSE, message=FALSE}
+```{r setupEnvironment, echo=FALSE, cache=TRUE, warning=FALSE, message=FALSE}
 
 # http://stackoverflow.com/questions/18931006/
 #   how-to-suppress-warning-messages-when-loading-a-library
