@@ -68,7 +68,7 @@ percentDataRemoved <-
           dbDataStatistics$numberobservations,1)
 ```
 - Transform the variable names to lower case  
-- Remove '.' from variale names  
+- Remove '.' from variable names  
 - Exclude data from U.S. territories  
 - Apply a maximum percent missing threshold to remove partial observations  
 - Remove whitespace from the company type  
@@ -83,7 +83,7 @@ percentDataRemoved <-
 - Aggregate the complaint issues into 
 `r length(levels(trainingData$issuecategory))` categories  
 - Remove the "other" category  
-- Append city, state, latitude, & lognitude from the [zipcode R package](https://jeffreybreen.wordpress.com/2011/01/05/cran-zipcode/)  
+- Append city, state, latitude, & longitude from the [zipcode R package](https://jeffreybreen.wordpress.com/2011/01/05/cran-zipcode/)  
 - Add a companyid variable  
 - Convert date variables  
 - Convert factor variables  
@@ -152,7 +152,7 @@ mortgagePercentage <- initializePercentIssue("mortgage",
 stateSubmittedViaPercentage <-
     computeStateSubmittedViaPercentage(trainingData)
 ```
-- Percentage of mortage category consumer complaints for each U.S. state 
+- Percentage of mortgage category consumer complaints for each U.S. state 
 [choropleth](http://blog.crisis.net/choropleth-maps-with-d3/)
   
 ```{r mortgagePercentage, echo=FALSE}
@@ -200,3 +200,47 @@ ggmap(texasMap) + geom_point(aes(x=lon,
 - [D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2. The R Journal,
   5(1), 144-161.](http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf)  
 - Map tiles by [Stamen Design](http://stamen.com/), under [CC BY 3.0.](http://creativecommons.org/licenses/by/3.0/) Data by [OpenStreetMap](http://www.openstreetmap.org/), under [ODbL](http://www.openstreetmap.org/copyright).  
+
+## Debt Collection Category Percentage  
+- Percentage of debt collection category consumer complaints for each U.S. state  
+  
+```{r debtCollectionPercentage, echo=FALSE}
+debtCollectionPercentage <-
+    initializePercentIssue("debtcollection",
+                           stateIssueCategoryPercentage,
+                           state.regions)
+
+choro = StateChoropleth$new(debtCollectionPercentage)
+choro$title <- "Percentage of Debt Collection Complaints"
+choro$ggplot_scale = scale_fill_brewer(palette="YlGnBu")
+choro$render()
+```
+
+## Credit Category Percentage  
+- Percentage of credit category consumer complaints for each U.S. state  
+  
+```{r creditPercentage, echo=FALSE}
+creditPercentage <- initializePercentIssue("credit",
+                                           stateIssueCategoryPercentage,
+                                           state.regions)
+
+choro = StateChoropleth$new(creditPercentage)
+choro$title <- "Percentage of Credit Complaints"
+choro$ggplot_scale = scale_fill_brewer(palette="Oranges")
+choro$render()
+```
+
+## Banking Category Percentage
+- Percentage of banking category consumer complaints for each U.S. state  
+  
+```{r bankingPercentage, echo=FALSE}
+bankingPercentage <- initializePercentIssue("banking",
+                                            stateIssueCategoryPercentage,
+                                            state.regions)
+
+choro = StateChoropleth$new(bankingPercentage)
+choro$title <- "Percentage of Banking Complaints"
+choro$ggplot_scale = scale_fill_brewer(palette="RdPu")
+choro$render()
+```
+  
