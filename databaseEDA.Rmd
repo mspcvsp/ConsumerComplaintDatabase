@@ -119,7 +119,7 @@ print(xtable(percentMissingTableData),
       html.table.attributes="class='table-bordered'")
 ```
   
-## Exploratory Data Analysis
+## Issue Category Percentage
 ```{r eda1, echo=FALSE, results='asis'}
 summaryIssueCategoryPercentage <-
     initializeSummaryIssueCategoryPercentage(trainingData)
@@ -139,7 +139,7 @@ print(xtable(summaryIssueCategoryPercentage),
       html.table.attributes="class='table-bordered'")
 ```
 
-## Exploratory Data Analysis (cont.)
+## Percentage of Mortgage Category Complaints
 ```{r eda3, echo=FALSE}
 stateIssueCategoryPercentage <-
     computeStateIssueCategoryPercentage(trainingData)
@@ -151,7 +151,7 @@ mortgagePercentage <- initializePercentIssue("mortgage",
 stateSubmittedViaPercentage <-
     computeStateSubmittedViaPercentage(trainingData)
 ```
-- Percentage of mortage-related consumer complaints for each U.S. state 
+- Percentage of mortage related consumer complaints for each U.S. state 
 [choropleth](http://blog.crisis.net/choropleth-maps-with-d3/)
   
 ```{r eda4, echo=FALSE}
@@ -164,5 +164,20 @@ library(RColorBrewer)
 choro = StateChoropleth$new(mortgagePercentage)
 choro$title <- "Percentage of Mortgage Complaints"
 choro$ggplot_scale = scale_fill_brewer(palette="PuBuGn")
+choro$render()
+```
+
+## Perecent of Debt Collection Category Complaints
+- Percentage of debt collection related consumer complaints for each U.S. state 
+  
+```{r eda5, echo=FALSE}
+debtCollectionPercentage <-
+    initializePercentIssue("debtcollection",
+                           stateIssueCategoryPercentage,
+                           state.regions)
+
+choro = StateChoropleth$new(debtCollectionPercentage)
+choro$title <- "Percentage of Debt Collection Complaints"
+choro$ggplot_scale = scale_fill_brewer(palette="YlGnBu")
 choro$render()
 ```
