@@ -168,49 +168,7 @@ choro$ggplot_scale = scale_fill_brewer(palette="PuBuGn")
 choro$render()
 ```
 
-## Perecent of Debt Collection Category Complaints
-- Percentage of debt collection category consumer complaints for each U.S. state 
-  
-```{r debtCollectionPercentage, echo=FALSE}
-debtCollectionPercentage <-
-    initializePercentIssue("debtcollection",
-                           stateIssueCategoryPercentage,
-                           state.regions)
-
-choro = StateChoropleth$new(debtCollectionPercentage)
-choro$title <- "Percentage of Debt Collection Complaints"
-choro$ggplot_scale = scale_fill_brewer(palette="YlGnBu")
-choro$render()
-```
-
-## Percent of Credit Category Complaints 
-- Percentage of credit category consumer complaints for each U.S. state  
-  
-```{r creditPercentage, echo=FALSE}
-creditPercentage <- initializePercentIssue("credit",
-                                           stateIssueCategoryPercentage,
-                                           state.regions)
-
-choro = StateChoropleth$new(creditPercentage)
-choro$title <- "Percentage of Credit Complaints"
-choro$ggplot_scale = scale_fill_brewer(palette="Oranges")
-choro$render()
-```
-
-## Percent of Banking Category Complaints
-
-```{r bankingPercentage, echo=FALSE}
-bankingPercentage <- initializePercentIssue("banking",
-                                            stateIssueCategoryPercentage,
-                                            state.regions)
-
-choro = StateChoropleth$new(bankingPercentage)
-choro$title <- "Percentage of Banking Complaints"
-choro$ggplot_scale = scale_fill_brewer(palette="RdPu")
-choro$render()
-```
-
-## Mortgage Category Complaints  
+## Percentage of Mortgage Category Complaints  
 ```{r vizTopFiveTexasIssueCategories, echo=FALSE, message=FALSE}
 library(ggmap)
 if (is.na(file.info(file.path(analyticDataPath,
