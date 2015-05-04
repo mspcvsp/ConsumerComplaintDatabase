@@ -1,3 +1,9 @@
+library(choroplethr)
+library(choroplethrMaps)
+library(data.table)
+
+data(state.regions)
+
 initializeSummaryIssueCategoryPercentage <- function(complaintData) {
     summaryTableData <- table(complaintData$issuecategory)
     

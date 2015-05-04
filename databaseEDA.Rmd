@@ -4,6 +4,7 @@ author: mspcvsp
 date: 05/01/15
 output:
   ioslides_presentation:
+    widescreen: true
     smaller: true
     css: styles.css
 ---
@@ -120,7 +121,7 @@ print(xtable(percentMissingTableData),
 ```
   
 ## Issue Category Percentage
-```{r eda1, echo=FALSE, results='asis'}
+```{r issueCategoryPercentage, echo=FALSE, results='asis'}
 summaryIssueCategoryPercentage <-
     initializeSummaryIssueCategoryPercentage(trainingData)
 
@@ -140,7 +141,7 @@ print(xtable(summaryIssueCategoryPercentage),
 ```
 
 ## Percentage of Mortgage Category Complaints
-```{r eda3, echo=FALSE}
+```{r mortgatePercentage, echo=FALSE}
 stateIssueCategoryPercentage <-
     computeStateIssueCategoryPercentage(trainingData)
 
@@ -151,10 +152,10 @@ mortgagePercentage <- initializePercentIssue("mortgage",
 stateSubmittedViaPercentage <-
     computeStateSubmittedViaPercentage(trainingData)
 ```
-- Percentage of mortage related consumer complaints for each U.S. state 
+- Percentage of mortage category consumer complaints for each U.S. state 
 [choropleth](http://blog.crisis.net/choropleth-maps-with-d3/)
   
-```{r eda4, echo=FALSE}
+```{r mortgagePercentage, echo=FALSE}
 library(choroplethr)
 library(choroplethrMaps)
 library(ggplot2)
@@ -168,9 +169,9 @@ choro$render()
 ```
 
 ## Perecent of Debt Collection Category Complaints
-- Percentage of debt collection related consumer complaints for each U.S. state 
+- Percentage of debt collection category consumer complaints for each U.S. state 
   
-```{r eda5, echo=FALSE}
+```{r debtCollectionPercentage, echo=FALSE}
 debtCollectionPercentage <-
     initializePercentIssue("debtcollection",
                            stateIssueCategoryPercentage,
@@ -181,3 +182,63 @@ choro$title <- "Percentage of Debt Collection Complaints"
 choro$ggplot_scale = scale_fill_brewer(palette="YlGnBu")
 choro$render()
 ```
+
+## Percent of Credit Category Complaints 
+- Percentage of credit category consumer complaints for each U.S. state  
+  
+```{r creditPercentage, echo=FALSE}
+creditPercentage <- initializePercentIssue("credit",
+                                           stateIssueCategoryPercentage,
+                                           state.regions)
+
+choro = StateChoropleth$new(creditPercentage)
+choro$title <- "Percentage of Credit Complaints"
+choro$ggplot_scale = scale_fill_brewer(palette="Oranges")
+choro$render()
+```
+
+## Percent of Banking Category Complaints
+
+```{r bankingPercentage, echo=FALSE}
+bankingPercentage <- initializePercentIssue("banking",
+                                            stateIssueCategoryPercentage,
+                                            state.regions)
+
+choro = StateChoropleth$new(bankingPercentage)
+choro$title <- "Percentage of Banking Complaints"
+choro$ggplot_scale = scale_fill_brewer(palette="RdPu")
+choro$render()
+```
+
+## Mortgage Category Complaints  
+```{r vizTopFiveTexasIssueCategories, echo=FALSE, message=FALSE}
+library(ggmap)
+if (is.na(file.info(file.path(analyticDataPath,
+                              "/texasMapData.RData"))[1,"size"])) {
+    texasMap <- get_map("texas",zoom=6,source="stamen",maptype="toner")
+
+    topFiveTexasIssueCategories <-
+        estimateTopFiveStateIssueCategories(trainingData, "TX")
+
+    save(texasMap,topFiveTexasIssueCategories,
+         file=file.path(analyticDataPath,"/texasMapData.RData"))
+}
+load(file=file.path(analyticDataPath,"/texasMapData.RData"))
+
+ggmap(texasMap) + geom_point(aes(x=lon,
+                                 y=lat,
+                                 colour=issuecateogry,
+                                 size=percentageRange),
+                                 alpha=0.2,
+                                 data=topFiveTexasIssueCategories) +
+    scale_color_brewer(palette="Dark2") + 
+    ggtitle('Estimated Top Five Consumer Complaint Issue Cateogries') +
+    guides(colour = guide_legend(override.aes = list(size=5))) +
+    theme_bw(base_size = 10) +
+    theme(legend.title = element_text(size=10, face="bold")) +
+    theme(legend.text = element_text(size = 10, face = "bold"))
+```
+  
+- [D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2. The R Journal,
+  5(1), 144-161.](http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf)  
+- Map tiles by [Stamen Design](http://stamen.com/), under [CC BY 3.0.](http://creativecommons.org/licenses/by/3.0/) Data by [OpenStreetMap](http://www.openstreetmap.org/), under [ODbL](http://www.openstreetmap.org/copyright).  
