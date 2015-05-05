@@ -215,7 +215,7 @@ ggmap(texasMap) + geom_point(aes(x=lon,
                                  alpha=0.2,
                                  data=topFiveTexasIssueCategories) +
     scale_color_brewer(palette="Dark2") + 
-    ggtitle('Estimated Top Five Consumer Complaint Issue Cateogries') +
+    ggtitle('Estimated Top Five\nConsumer Complaint Issue Cateogries') +
     guides(colour = guide_legend(override.aes = list(size=5))) +
     theme_bw(base_size = 10) +
     theme(legend.title = element_text(size=10, face="bold")) +
