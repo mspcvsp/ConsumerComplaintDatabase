@@ -42,6 +42,9 @@ testData <- loadAnalyticData(analyticDataPath,
 dbDataStatistics <- loadDataStatistics(analyticDataPath)
 
 dbVariables <- initializeVariables(dbDataStatistics)
+
+startDate <- min(trainingData$datereceived)
+endDate <- max(trainingData$datereceived)
 ```
    
 - [Consumer Financial Protection Bureau (CFPB)](http://www.consumerfinance.gov/)
@@ -50,6 +53,7 @@ dbVariables <- initializeVariables(dbDataStatistics)
     * Number of variables: `r length(dbVariables)`  
     * Number of companies: `r dbDataStatistics$numbercompanies`  
     * Number of unique complaint issues: `r dbDataStatistics$numberissues`
+    * Date range: `r startDate` to `r endDate`  
     * Data retrieved from [Data.gov](https://www.data.gov/)  
   
 - Topics covered in this presentation
@@ -243,4 +247,3 @@ choro$title <- "Percentage of Banking Complaints"
 choro$ggplot_scale = scale_fill_brewer(palette="RdPu")
 choro$render()
 ```
-  

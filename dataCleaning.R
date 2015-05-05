@@ -333,7 +333,11 @@ loadAnalyticData <- function(analyticDataPath,
     
     analyticData$companyid <- as.factor(as.character(analyticData$companyid))
     
-    return(analyticData)    
+    analyticData$datereceived <- as.Date(analyticData$datereceived)
+    
+    analyticData$datesenttocompany <- as.Date(analyticData$datesenttocompany)
+    
+    return(analyticData)
 }
 
 loadDataStatistics <- function(analyticDataPath) {
