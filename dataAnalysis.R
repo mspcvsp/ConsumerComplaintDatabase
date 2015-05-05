@@ -112,6 +112,19 @@ initializePercentIssue <- function(issuecategory,
     return(issueCategoryPercentage)
 }
 
+initializeSummaryPercentSubmittedVia <- function(complaintData) {
+    tableData <- sort(table(complaintData$submittedvia),
+                            decreasing =TRUE)
+    
+    tableData <- round(100 * tableData / sum(tableData),1)
+    tableData <- as.data.frame(tableData)
+
+    colnames(tableData) <- c("percent")
+    tableData <- t(tableData)
+    
+    return(tableData)
+}
+
 initializePercentSubmittedVia <- function(submittedvia,
                                           stateSubmittedViaPercentage,
                                           state.regions) {

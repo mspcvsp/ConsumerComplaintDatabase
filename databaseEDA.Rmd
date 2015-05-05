@@ -7,6 +7,8 @@ output:
     widescreen: true
     smaller: true
     css: styles.css
+    fig_width: 8
+    fig_height: 4
 ---
 
 ## Introduction
@@ -142,7 +144,7 @@ ggplot(trainingData, aes(x=datereceived)) +
                     limits = c(startDate, endDate)) +
        ylab("Frequency") + xlab("Year and Month") +
        theme_bw() + theme(axis.text.x=element_text(angle=90, hjust=1)) +
-       ggtitle("Monthly Frequency of Consumer Complaints")
+       ggtitle("Estimated Monthly Frequency of Consumer Complaints")
 ```
   
 ## Issue Category Percentage
@@ -177,7 +179,7 @@ mortgagePercentage <- initializePercentIssue("mortgage",
 stateSubmittedViaPercentage <-
     computeStateSubmittedViaPercentage(trainingData)
 ```
-- Percentage of mortgage category consumer complaints for each U.S. state 
+- Estimated percentage of mortgage category consumer complaints for each U.S. state 
 [choropleth](http://blog.crisis.net/choropleth-maps-with-d3/)
   
 ```{r mortgagePercentage, echo=FALSE}
@@ -212,7 +214,7 @@ ggmap(texasMap) + geom_point(aes(x=lon,
                                  y=lat,
                                  colour=issuecateogry,
                                  size=percentageRange),
-                                 alpha=0.2,
+                                 alpha=0.4,
                                  data=topFiveTexasIssueCategories) +
     scale_color_brewer(palette="Dark2") + 
     ggtitle('Estimated Top Five\nConsumer Complaint Issue Cateogries') +
@@ -227,7 +229,7 @@ ggmap(texasMap) + geom_point(aes(x=lon,
 - Map tiles by [Stamen Design](http://stamen.com/), under [CC BY 3.0.](http://creativecommons.org/licenses/by/3.0/) Data by [OpenStreetMap](http://www.openstreetmap.org/), under [ODbL](http://www.openstreetmap.org/copyright).  
 
 ## Debt Collection Category Percentage  
-- Percentage of debt collection category consumer complaints for each U.S. state  
+- Estimated percentage of debt collection category consumer complaints for each U.S. state  
   
 ```{r debtCollectionPercentage, echo=FALSE}
 debtCollectionPercentage <-
@@ -242,7 +244,7 @@ choro$render()
 ```
 
 ## Credit Category Percentage  
-- Percentage of credit category consumer complaints for each U.S. state  
+- Estimated percentage of credit category consumer complaints for each U.S. state  
   
 ```{r creditPercentage, echo=FALSE}
 creditPercentage <- initializePercentIssue("credit",
@@ -256,7 +258,7 @@ choro$render()
 ```
 
 ## Banking Category Percentage
-- Percentage of banking category consumer complaints for each U.S. state  
+- Estimated percentage of banking category consumer complaints for each U.S. state  
   
 ```{r bankingPercentage, echo=FALSE}
 bankingPercentage <- initializePercentIssue("banking",
@@ -266,5 +268,30 @@ bankingPercentage <- initializePercentIssue("banking",
 choro = StateChoropleth$new(bankingPercentage)
 choro$title <- "Percentage of Banking Complaints"
 choro$ggplot_scale = scale_fill_brewer(palette="RdPu")
+choro$render()
+```
+
+## Percentage Submitted Via
+- Estimated percent submitted via
+```{r percentageSubmittedVia, echo=FALSE, results='asis'}
+summaryPercentageSubmittedVia <-
+    initializeSummaryPercentSubmittedVia(trainingData)
+
+print(xtable(summaryPercentageSubmittedVia),
+      type="html",
+      include.rownames=FALSE,
+      html.table.attributes="class='table-bordered'")
+```
+  
+- Estimated percentage submitted via the web  
+```{r webSubmittedPercentage, echo=FALSE}
+webSubmittedPercentage <-
+    initializePercentSubmittedVia("web",
+                                  stateSubmittedViaPercentage,
+                                  state.regions)
+
+choro = StateChoropleth$new(webSubmittedPercentage)
+choro$title <- "Percentage of Web Submittals"
+choro$ggplot_scale = scale_fill_brewer(palette="PuBuGn")
 choro$render()
 ```
