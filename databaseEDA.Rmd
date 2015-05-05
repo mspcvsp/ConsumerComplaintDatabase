@@ -123,6 +123,27 @@ print(xtable(percentMissingTableData),
       include.rownames=FALSE,
       html.table.attributes="class='table-bordered'")
 ```
+
+## Frequency of Complaints
+- Estimated monthly occurence of consumer complaints  
+```{r complaintFrequency, echo=FALSE}
+library(ggplot2)
+library(scales)
+# http://stackoverflow.com/questions/10770698/
+#   understanding-dates-and-plotting-a-histogram-with-ggplot2-in-r
+#
+# http://stackoverflow.com/questions/1330989/
+#   rotating-and-spacing-axis-labels-in-ggplot2
+ggplot(trainingData, aes(x=datereceived)) +
+    geom_histogram(binwidth=30, colour="white") +
+       scale_x_date(labels = date_format("%Y-%b"),
+                    breaks = seq(min(trainingData$datereceived)-5,
+                                 max(trainingData$datereceived)+5, 30),
+                    limits = c(startDate, endDate)) +
+       ylab("Frequency") + xlab("Year and Month") +
+       theme_bw() + theme(axis.text.x=element_text(angle=90, hjust=1)) +
+       ggtitle("Monthly Frequency of Consumer Complaints")
+```
   
 ## Issue Category Percentage
 ```{r issueCategoryPercentage, echo=FALSE, results='asis'}
