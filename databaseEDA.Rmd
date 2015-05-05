@@ -127,8 +127,8 @@ print(xtable(percentMissingTableData),
 ```
 
 ## Frequency of Complaints
-- Estimated monthly occurence of consumer complaints  
-```{r complaintFrequency, echo=FALSE}
+- Estimated temporal occurence of consumer complaints  
+```{r complaintFrequency, echo=FALSE, fig.width=10, fig.height=5}
 library(ggplot2)
 library(scales)
 # http://stackoverflow.com/questions/10770698/
@@ -136,15 +136,17 @@ library(scales)
 #
 # http://stackoverflow.com/questions/1330989/
 #   rotating-and-spacing-axis-labels-in-ggplot2
-ggplot(trainingData, aes(x=datereceived)) +
-    geom_histogram(binwidth=30, colour="white") +
+ggplot(trainingData, aes(x=datereceived, fill=issuecategory)) +
+    geom_histogram(binwidth=30) +
        scale_x_date(labels = date_format("%Y-%b"),
                     breaks = seq(min(trainingData$datereceived)-5,
-                                 max(trainingData$datereceived)+5, 30),
+                                 max(trainingData$datereceived)+5, 180),
                     limits = c(startDate, endDate)) +
-       ylab("Frequency") + xlab("Year and Month") +
-       theme_bw() + theme(axis.text.x=element_text(angle=90, hjust=1)) +
-       ggtitle("Estimated Monthly Frequency of Consumer Complaints")
+       ylab("Frequency") + xlab("Date") +
+       facet_wrap(~issuecategory, nrow=3) +
+       theme_gray() + theme(axis.text.x=element_text(angle=90, hjust=1)) +
+       scale_fill_brewer(palette = "Paired") +
+       ggtitle("Estimated Frequency of Consumer Complaints")
 ```
   
 ## Issue Category Percentage
@@ -190,7 +192,7 @@ library(RColorBrewer)
 # http://cran.r-project.org/web/packages/choroplethr/vignettes/
 #   b-state-choropleth.html
 choro = StateChoropleth$new(mortgagePercentage)
-choro$title <- "Percentage of Mortgage Complaints"
+choro$title <- "Estimated Percentage of Mortgage Complaints"
 choro$ggplot_scale = scale_fill_brewer(palette="PuBuGn")
 choro$render()
 ```
@@ -238,7 +240,7 @@ debtCollectionPercentage <-
                            state.regions)
 
 choro = StateChoropleth$new(debtCollectionPercentage)
-choro$title <- "Percentage of Debt Collection Complaints"
+choro$title <- "Estimated Percentage of Debt Collection Complaints"
 choro$ggplot_scale = scale_fill_brewer(palette="YlGnBu")
 choro$render()
 ```
@@ -266,7 +268,7 @@ bankingPercentage <- initializePercentIssue("banking",
                                             state.regions)
 
 choro = StateChoropleth$new(bankingPercentage)
-choro$title <- "Percentage of Banking Complaints"
+choro$title <- "Estimated Percentage of Banking Complaints"
 choro$ggplot_scale = scale_fill_brewer(palette="RdPu")
 choro$render()
 ```
@@ -291,7 +293,7 @@ webSubmittedPercentage <-
                                   state.regions)
 
 choro = StateChoropleth$new(webSubmittedPercentage)
-choro$title <- "Percentage of Web Submittals"
+choro$title <- "Estimated Percentage of Web Submittals"
 choro$ggplot_scale = scale_fill_brewer(palette="PuBuGn")
 choro$render()
 ```
