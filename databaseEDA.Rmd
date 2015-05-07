@@ -59,7 +59,7 @@ endDate <- max(trainingData$datereceived)
     * Data retrieved from [Data.gov](https://www.data.gov/)  
   
 - Topics covered in this presentation
-    * Data cleaning
+    * [Data cleaning](https://github.com/mspcvsp/ConsumerComplaintDatabase/blob/gh-pages/dataCleaning.R)
     * Visualization of state-level statistics via [chroopleths](https://github.com/trulia/choroplethr)
     * Plotting zipcode-level statistics using the [ggmap package](http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf)
 
@@ -80,19 +80,18 @@ percentDataRemoved <-
 - Remove whitespace from the company type  
 - For each database variable:  
     * Transform to lower case  
-    * Remove apostrophe (e.g. change cont'd to contd)
     * Remove punctuation  
     * Replace multiple spaces with a single space  
   
 ## Data Cleaning (cont.)
 - Remove white space from the company type  
-- Aggregate the complaint issues into 
+- Aggregate the `r dbDataStatistics$numberissues` complaint issues into 
 `r length(levels(trainingData$issuecategory))` categories  
 - Remove the "other" category  
 - Append city, state, latitude, & longitude from the [zipcode R package](https://jeffreybreen.wordpress.com/2011/01/05/cran-zipcode/)  
 - Add a companyid variable  
 - Convert date variables  
-- Convert factor variables  
+- Convert categorical (i.e. [factor](http://statistics.ats.ucla.edu/stat/r/modules/factor_variables.htm)) variables  
 - Percentage of data removed during data cleaning: `r percentDataRemoved`%  
 
 ## Percentage of Missing Data
@@ -128,7 +127,7 @@ print(xtable(percentMissingTableData),
 
 ## Frequency of Complaints
 - Estimated temporal occurence of consumer complaints  
-```{r complaintFrequency, echo=FALSE, fig.width=10, fig.height=5}
+```{r complaintFrequency, echo=FALSE, fig.width=10, fig.height=5, cache=TRUE}
 library(ggplot2)
 library(scales)
 # http://stackoverflow.com/questions/10770698/
@@ -136,7 +135,10 @@ library(scales)
 #
 # http://stackoverflow.com/questions/1330989/
 #   rotating-and-spacing-axis-labels-in-ggplot2
-ggplot(trainingData, aes(x=datereceived, fill=issuecategory)) +
+png(filename="./figures/complaintFrequency.png",
+    width=800,
+    height=480)
+g <- ggplot(trainingData, aes(x=datereceived, fill=issuecategory)) +
     geom_histogram(binwidth=30) +
        scale_x_date(labels = date_format("%Y-%b"),
                     breaks = seq(min(trainingData$datereceived)-5,
@@ -147,7 +149,12 @@ ggplot(trainingData, aes(x=datereceived, fill=issuecategory)) +
        theme_gray() + theme(axis.text.x=element_text(angle=90, hjust=1)) +
        scale_fill_brewer(palette = "Paired") +
        ggtitle("Estimated Frequency of Consumer Complaints")
+print(g)
+# http://stackoverflow.com/questions/750703/
+#   suppressing-null-device-output-with-r-in-batch-mode
+invisible(dev.off())
 ```
+![Frequency of Complaints](./figures/complaintFrequency.png)
   
 ## Issue Category Percentage
 ```{r issueCategoryPercentage, echo=FALSE, results='asis'}
@@ -170,7 +177,7 @@ print(xtable(summaryIssueCategoryPercentage),
 ```
 
 ## Percentage of Mortgage Category Complaints
-```{r mortgatePercentage, echo=FALSE}
+```{r mortgatePercentage, echo=FALSE, cache=TRUE}
 stateIssueCategoryPercentage <-
     computeStateIssueCategoryPercentage(trainingData)
 
@@ -191,14 +198,19 @@ library(ggplot2)
 library(RColorBrewer)
 # http://cran.r-project.org/web/packages/choroplethr/vignettes/
 #   b-state-choropleth.html
+png(filename="./figures/mortgagePercentage.png",
+    width=800,
+    height=480)
 choro = StateChoropleth$new(mortgagePercentage)
 choro$title <- "Estimated Percentage of Mortgage Complaints"
 choro$ggplot_scale = scale_fill_brewer(palette="PuBuGn")
 choro$render()
+invisible(dev.off())
 ```
+![Mortgage Percentage](./figures/mortgagePercentage.png)
 
 ## Percentage of Mortgage Category Complaints  
-```{r vizTopFiveTexasIssueCategories, echo=FALSE, message=FALSE}
+```{r vizTopFiveTexasIssueCategories, echo=FALSE, message=FALSE, cache=TRUE}
 library(ggmap)
 if (is.na(file.info(file.path(analyticDataPath,
                               "/texasMapData.RData"))[1,"size"])) {
@@ -212,20 +224,26 @@ if (is.na(file.info(file.path(analyticDataPath,
 }
 load(file=file.path(analyticDataPath,"/texasMapData.RData"))
 
-ggmap(texasMap) + geom_point(aes(x=lon,
-                                 y=lat,
-                                 colour=issuecateogry,
-                                 size=percentageRange),
-                                 alpha=0.4,
-                                 data=topFiveTexasIssueCategories) +
+# http://stackoverflow.com/questions/12157291/ggmap-doesnt-show-maps
+png(filename="./figures/texasPercentMortgage.png",
+    width=600,
+    height=400)
+print(ggmap(texasMap) + geom_point(aes(x=lon,
+                                  y=lat,
+                                  colour=issuecateogry,
+                                  size=percentageRange),
+                                  alpha=0.4,
+                                  data=topFiveTexasIssueCategories) +
     scale_color_brewer(palette="Dark2") + 
-    ggtitle('Estimated Top Five\nConsumer Complaint Issue Cateogries') +
     guides(colour = guide_legend(override.aes = list(size=5))) +
     theme_bw(base_size = 10) +
     theme(legend.title = element_text(size=10, face="bold")) +
-    theme(legend.text = element_text(size = 10, face = "bold"))
+    theme(legend.text = element_text(size = 10, face = "bold")) +
+    ggtitle('Estimated Top Five\nConsumer Complaint Issue Cateogries'))
+invisible(dev.off())
 ```
-  
+![Texas Mortgage Percentage](./figures/texasPercentMortgage.png)
+
 - [D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2. The R Journal,
   5(1), 144-161.](http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf)  
 - Map tiles by [Stamen Design](http://stamen.com/), under [CC BY 3.0.](http://creativecommons.org/licenses/by/3.0/) Data by [OpenStreetMap](http://www.openstreetmap.org/), under [ODbL](http://www.openstreetmap.org/copyright).  
@@ -234,6 +252,9 @@ ggmap(texasMap) + geom_point(aes(x=lon,
 - Estimated percentage of debt collection category consumer complaints for each U.S. state  
   
 ```{r debtCollectionPercentage, echo=FALSE}
+png(filename="./figures/debtCollectionPercentage.png",
+    width=800,
+    height=480)
 debtCollectionPercentage <-
     initializePercentIssue("debtcollection",
                            stateIssueCategoryPercentage,
@@ -243,26 +264,36 @@ choro = StateChoropleth$new(debtCollectionPercentage)
 choro$title <- "Estimated Percentage of Debt Collection Complaints"
 choro$ggplot_scale = scale_fill_brewer(palette="YlGnBu")
 choro$render()
+invisible(dev.off())
 ```
+![Debt Collection Percentage](./figures/debtCollectionPercentage.png)
 
 ## Credit Category Percentage  
 - Estimated percentage of credit category consumer complaints for each U.S. state  
   
-```{r creditPercentage, echo=FALSE}
+```{r creditPercentage, echo=FALSE, cache=TRUE}
+png(filename="./figures/creditPercentage.png",
+    width=800,
+    height=480)
 creditPercentage <- initializePercentIssue("credit",
                                            stateIssueCategoryPercentage,
                                            state.regions)
 
 choro = StateChoropleth$new(creditPercentage)
-choro$title <- "Percentage of Credit Complaints"
+choro$title <- "Estimated Percentage of Credit Complaints"
 choro$ggplot_scale = scale_fill_brewer(palette="Oranges")
 choro$render()
+invisible(dev.off())
 ```
+![Credit Category Percentage](./figures/creditPercentage.png)
 
 ## Banking Category Percentage
 - Estimated percentage of banking category consumer complaints for each U.S. state  
   
-```{r bankingPercentage, echo=FALSE}
+```{r bankingPercentage, echo=FALSE, cache=TRUE}
+png(filename="./figures/bankingPercentage.png",
+    width=800,
+    height=480)
 bankingPercentage <- initializePercentIssue("banking",
                                             stateIssueCategoryPercentage,
                                             state.regions)
@@ -271,7 +302,9 @@ choro = StateChoropleth$new(bankingPercentage)
 choro$title <- "Estimated Percentage of Banking Complaints"
 choro$ggplot_scale = scale_fill_brewer(palette="RdPu")
 choro$render()
+invisible(dev.off())
 ```
+![Banking Category](./figures/bankingPercentage.png)
 
 ## Percentage Submitted Via
 - Estimated percent submitted via
@@ -286,7 +319,10 @@ print(xtable(summaryPercentageSubmittedVia),
 ```
   
 - Estimated percentage submitted via the web  
-```{r webSubmittedPercentage, echo=FALSE}
+```{r webSubmittedPercentage, echo=FALSE, cache=TRUE}
+png(filename="./figures/webSubmittedPercentage.png",
+    width=640,
+    height=384)
 webSubmittedPercentage <-
     initializePercentSubmittedVia("web",
                                   stateSubmittedViaPercentage,
@@ -296,4 +332,6 @@ choro = StateChoropleth$new(webSubmittedPercentage)
 choro$title <- "Estimated Percentage of Web Submittals"
 choro$ggplot_scale = scale_fill_brewer(palette="PuBuGn")
 choro$render()
+invisible(dev.off())
 ```
+![Web Submitted Percentage](./figures/webSubmittedPercentage.png)
