@@ -1,7 +1,7 @@
 ---
 title: "CFPB Consumer Complaint Database Exploratory Data Analysis"
 author: mspcvsp
-date: 05/01/15
+date: 05/07/15
 output:
   ioslides_presentation:
     widescreen: true
@@ -126,7 +126,7 @@ print(xtable(percentMissingTableData),
 ```
 
 ## Frequency of Complaints
-- Estimated temporal occurence of consumer complaints  
+- Estimated temporal occurrence of consumer complaints  
 ```{r complaintFrequency, echo=FALSE, fig.width=10, fig.height=5, cache=TRUE}
 library(ggplot2)
 library(scales)
@@ -335,3 +335,67 @@ choro$render()
 invisible(dev.off())
 ```
 ![Web Submitted Percentage](./figures/webSubmittedPercentage.png)
+
+## Distribution of complaints / companyid
+- Results suggest that number of complaints submitted for most companies in the CFPB
+Consumer Complaint Database is relatively low
+
+```{r complaintsCompanyId, echo=FALSE, cache=TRUE, message=FALSE, results='asis'}
+companyidComplaintCount <- table(trainingData$companyid)
+
+companyidComplaintCount <-
+    data.frame(companyid = names(companyidComplaintCount),
+               count = as.vector(companyidComplaintCount))
+
+png(filename="./figures/companyidComplaintCount.png",
+    width=640,
+    height=320)
+# http://stackoverflow.com/questions/1245273/
+#   histogram-with-logarithmic-scale
+ggplot(companyidComplaintCount,aes(x=count)) +
+    geom_histogram() + scale_x_log10() + xlab("Consumer Complaint Count") + 
+    ylab("Number of Companies")
+invisible(dev.off())
+
+companyidComplaintPercentage <-
+    data.frame(companyid=companyidComplaintCount$companyid,
+               percentage=100*companyidComplaintCount$count / 
+                          sum(companyidComplaintCount$count))
+
+companyidComplaintPercentage <-
+    companyidComplaintPercentage[with(companyidComplaintPercentage,
+                                  order(percentage,
+                                        decreasing = TRUE)),]
+
+companyidComplaintPercentage$cumulativepercentage <-
+    cumsum(companyidComplaintPercentage$percentage)
+
+companyidComplaintPercentage$percentage <-
+    round(companyidComplaintPercentage$percentage,2)
+
+companyidComplaintPercentage$cumulativepercentage <-
+    round(companyidComplaintPercentage$cumulativepercentage,2)
+
+companyidComplaintPercentage <- t(companyidComplaintPercentage[1:8,])
+
+print(xtable(companyidComplaintPercentage),
+      type="html",
+      include.colnames=FALSE,
+      html.table.attributes="class='table-bordered'")
+```
+![Consumer Complaint Counts](./figures/companyidComplaintCount.png)
+
+## Conclusion
+- Introduced a procedure for preparing the - [Consumer Financial Protection Bureau (CFPB)](http://www.consumerfinance.gov/)
+[Consumer Complaint Database](https://catalog.data.gov/dataset/consumer-complaint-database)
+for analysis  
+- Illustrated the following types of exploratory data analysis plots
+    * [Choropleth](http://blog.crisis.net/choropleth-maps-with-d3/)
+    * [Geospatial data visualization]([ggmap package](http://journal.r-project.org/archive/2013-1/kahle-wickhampdf))
+- Exploratory data analysis results suggest  
+    * Significant geospatial and temporal variation  
+    * The number of complaints for most companies is relatively low  
+- Potential directions for future analysis  
+    * Investigate the stability of zipcode level statistics  
+    * Evaluate the dependency of the complaint issue category variable on the
+    the timelyresponse, consumerdisputed, and companyresponse variables   
