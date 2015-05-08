@@ -325,8 +325,22 @@ splitData <- function(analyticDataPath,
               row.names=FALSE)
 }
 
-loadAnalyticData <- function(analyticDataPath,
-                             analyticDataFile) {
+loadAnalyticData <- function(analyticDataFile) {
+    #-------------------------------------------------------------------------
+    # Loads an "analytic data set" [1] (i.e. a data set that has been 
+    # prepared for analysis) into memory.
+    #
+    # Args:
+    #   analyticDataPath: String that stores the analytic data set file path
+    #
+    #   analyticDataFile: String that stores the analytic data set file name
+    #
+    # Returns:
+    #   analyticData: Data frame that stores training, validation, or
+    #                 test data
+    #
+    # [1] https://www.coursera.org/specialization/jhudatascience/1
+    #-------------------------------------------------------------------------
     analyticData <- read.csv(file.path(analyticDataPath,
                                        analyticDataFile),
                              header=TRUE)
@@ -341,6 +355,17 @@ loadAnalyticData <- function(analyticDataPath,
 }
 
 loadDataStatistics <- function(analyticDataPath) {
+    #-------------------------------------------------------------------------
+    # Loads an R data file that stores data statistics computed during 
+    # data cleaning into memory
+    #
+    # Args:
+    #   analyticDataPath: String that stores the analytic data folder path
+    #
+    # Returns:
+    #   dataStatistics: List that stores data statistics computed during 
+    #                   data cleaning into memory 
+    #-------------------------------------------------------------------------
     load(file=file.path(analyticDataPath,
                         "DataStatistics.RData"))
     
@@ -348,6 +373,25 @@ loadDataStatistics <- function(analyticDataPath) {
 }
 
 computeDataStatistics <- function(complaintData) {
+    #-------------------------------------------------------------------------
+    # Computes the followng statistics:
+    # - percent of missing data for each Consumer Financial Protection Bureau
+    #   (CFPB) Consumer Complaint Database variable
+    # - total number of observations 
+    # - number of companies
+    # - number of unique consumer complaint issues
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint 
+    #                  Database
+    # Returns:
+    #   dataStatistics: List that stores the following statistics:
+    #                   - percent of missing data for each CFPB Consumer 
+    #                     Complaint Database variable
+    #                   - total number of observations
+    #                   - number of companies
+    #                   - number of unique consumer complaint issues
+    #-------------------------------------------------------------------------
     numberObservations <- nrow(complaintData)
     dataStatistics <- list()
  
@@ -372,6 +416,21 @@ computeDataStatistics <- function(complaintData) {
 
 findMissingObservations <- function(variable,
                                     complaintData) {
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that keeps track of whether or not
+    # the input variable is missing for each complaintData row
+    #
+    # Args:
+    #   variable: String that refers to a specific complaintData column
+    #
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isVariableMissing: logical vector that keeps track of whether or not
+    #                      the input variable is missing for each 
+    #                      complaintData row
+    #-------------------------------------------------------------------------
     variableClass <- class(complaintData[1,variable])
 
     if (variableClass == "integer") {
@@ -699,6 +758,8 @@ initializeUnauthorizedTransactionIssueSelection <- function(complaintData) {
 
 findUncategorizedIssues <- function(categorySelection,
                                     complaintData) {
+    #-------------------------------------------------------------------------
+    # 
     isUncategorized <- vector(mode="logical", nrow(complaintData))
 
     for (key in names(categorySelection)) {
