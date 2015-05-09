@@ -386,8 +386,7 @@ print(xtable(companyidComplaintPercentage),
 ![Consumer Complaint Counts](./figures/companyidComplaintCount.png)
 
 ## Conclusion
-- Introduced a procedure for preparing the - [Consumer Financial Protection Bureau (CFPB)](http://www.consumerfinance.gov/)
-[Consumer Complaint Database](https://catalog.data.gov/dataset/consumer-complaint-database)
+- Introduced a procedure for preparing the - [Consumer Financial Protection Bureau (CFPB)](http://www.consumerfinance.gov/) [Consumer Complaint Database](https://catalog.data.gov/dataset/consumer-complaint-database)
 for analysis  
 - Illustrated the following types of exploratory data analysis plots
     * [Choropleth](http://blog.crisis.net/choropleth-maps-with-d3/)
