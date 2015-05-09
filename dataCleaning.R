@@ -1,9 +1,138 @@
-library(zipcode)
+# http://stackoverflow.com/questions/18931006/
+#   how-to-suppress-warning-messages-when-loading-a-library
+suppressWarnings(library(dplyr))
+suppressWarnings(library(Gmisc))
+
+library(caret)
+library(data.table)
+library(ggmap)
 library(lubridate)
+library(zipcode)
+library(choroplethrMaps)
 
-loadComplaintData <- function(csvFilePath,
-                              maximumPercentMissing) {
+data(state.regions)
 
+downloadData <- function(dataDirectory) {
+    #-------------------------------------------------------------------------
+    # Downloads the Consumer Finanical Protection Bureau Consumer
+    # Compllaint Database
+    #
+    # Args:
+    #   dataDirectory: String that stores the data download directory
+    #                  path
+    #
+    # Returns:
+    #   None
+    #-------------------------------------------------------------------------
+    if (!dir.exists(dataDirectory)) {
+        dir.create(dataDirectory)    
+    }
+
+    # Initialize the CFPB Consumer Complaint Database URL
+    fileURL <- paste0('https://data.consumerfinance.gov/api/views',
+                      '/x94z-ydhh/rows.csv?accessType=DOWNLOAD')
+    
+    download.file(fileURL, destfile=file.path(dataDirectory,
+                                              "/rows.csv"), method="curl")
+}
+
+createAnalyticDataset <- function(dataDirectory,
+                                  maximumPercentMissing,
+                                  analyticDataPath) {
+    #-------------------------------------------------------------------------
+    # Creates an analytic (i.e. tidy) data set. This process includes:
+    # 1.) Cleaning the CFPB consumer complaint database
+    # 2.) Splitting the data into training, validation, & test sets
+    #
+    # Args:
+    #   dataDirectory: String that stores the data download directory
+    #                  path
+    #
+    #   maximumPercentMissing: Defines the maximum percent of missing
+    #                          data allowed for a variable. 
+    #
+    #   analyticDataPath: String that stores the analytic data directory path
+    #
+    # Returns:
+    #   None
+    #
+    # Technical references:
+    #   https://www.coursera.org/specialization/jhudatascience/1
+    #
+    # http://www.prometheusresearch.com/
+    #   good-data-management-practices-for-data-analysis-tidy-data-part-2/
+    #-------------------------------------------------------------------------
+    csvFile <- list.files(path=dataDirectory, pattern="*.csv")
+    if (length(csvFile) != 1) {
+        simpleError('Number of *.csv files != 1')
+    }
+
+    cleanData <- cleanComplaintData(file.path(dataDirectory, csvFile),
+                                    maximumPercentMissing=10.0)
+    
+    complaintData <- cleanData$complaintData
+    dataStatistics <- cleanData$dataStatistics
+    rm(cleanData)
+    
+    if (!dir.exists(analyticDataPath)) {
+        dir.create(analyticDataPath)    
+    }
+
+    save(file=file.path(analyticDataPath, "DataStatistics.RData"),
+         dataStatistics)
+    
+    splitData(analyticDataPath,
+              complaintData)
+}
+
+cleanComplaintData <- function(csvFilePath,
+                               maximumPercentMissing) {
+    #-------------------------------------------------------------------------
+    # Transforms the CPFB Consumer Complaint Database into tidy data via
+    # the following operations:
+    #
+    # 1.) Transform the variable names to lower case
+    #
+    # 2.) Remove '.' from variale names
+    #
+    # 3.) Exclude data from U.S. territories
+    #
+    # 4.) Apply a maximum percent missing threshold to remove partial 
+    #     observations
+    #
+    # 5.) Remove whitespace from the company type
+    #
+    # 6.) For each database variable:
+    #     a.) Transform to lower case
+    #     b.) Remove apostrophe (e.g. change cont'd to contd)
+    #     c.) Remove punctuation
+    #     d.) Replace multiple spaces with a single space
+    #
+    # 7.) Remove white space from the company type
+    #
+    # 8.) Aggregate the complaint issues into categories
+    #
+    # 9.) Remove the "other" category
+    #
+    # 10.) Append city, state, latitude, & lognitude
+    #
+    # 11.) Add a companyid variable
+    #
+    # 12.) Convert date variables
+    #
+    # 13.) Convert factor variables
+    #
+    # Args:
+    #   csvFilePath: String that stores the CPFB Consumer Complaint Database
+    #                *.csv file path
+    #
+    #   maximumPercentMissing: Defines the maximum percent of missing
+    #                          data allowed for a variable. 
+    #
+    # Returns:
+    #   complaintData: Data frame that stores the transformed CPFB Consumer
+    #                  Complaint Database
+    #-------------------------------------------------------------------------
     complaintData <- read.csv(csvFilePath,
                               header=TRUE,
                               stringsAsFactors=FALSE)
@@ -14,18 +143,18 @@ loadComplaintData <- function(csvFilePath,
     # Remove '.' from variable names
     colnames(complaintData) <- gsub('\\.','',colnames(complaintData))
     
-    # Remove states outside of the continental U.S.
+    # Exclude data from U.S. territories
     continentalUSStates <- append(state.abb, "DC")
 
     complaintData <-
         complaintData[which(complaintData$state %in% continentalUSStates),]
     
     # Remove partial observations
-    percentMissingData <- computePercentMissingData(complaintData)
+    dataStatistics <- computeDataStatistics(complaintData)
     
     dataFrameSegmentation <-
         initializeVariablesToAnalyze(maximumPercentMissing,
-                                     percentMissingData,
+                                     dataStatistics,
                                      complaintData)
 
     complaintData <- complaintData[,dataFrameSegmentation$variables]
@@ -70,7 +199,7 @@ loadComplaintData <- function(csvFilePath,
 
     isOtherCategory <- complaintData$issuecategory == "other"
     
-    percentMissingData$othercategory <- 100 * sum(isOtherCategory) / 
+    dataStatistics$othercategory <- 100 * sum(isOtherCategory) / 
                                         nrow(complaintData)
     
     complaintData <- complaintData[!isOtherCategory,]
@@ -87,7 +216,7 @@ loadComplaintData <- function(csvFilePath,
                                       zipcode,
                                       by=c("zipcode","state"))
     
-    percentMissingData$dataframejoin <-
+    dataStatistics$dataframejoin <-
         100 * (1.0 - sum(complete.cases(complaintData)) /
                      nrow(complaintData))
 
@@ -129,18 +258,35 @@ loadComplaintData <- function(csvFilePath,
         
     cleanData <- list()
     cleanData$complaintData <- complaintData
-    cleanData$percentMissingData <- percentMissingData
+    cleanData$dataStatistics <- dataStatistics
 
     return(cleanData) 
 }
 
 splitData <- function(analyticDataPath,
                       complaintData) {
+    #-------------------------------------------------------------------------
+    # Splits the CPFB Consumer Complaint Database into training, validation,
+    # and test data sets stored as *.csv files in the directory defined
+    # by the analyticDataPath input variable
+    #
+    # Args:
+    #   analyticDataPath: String that stores the analytic data directory path
+    #
+    #   complaintData: Data frame that stores the transformed CPFB Consumer
+    #                  Complaint Database
+    #
+    # Returns:
+    #   None
+    # 
+    # Technical References:
+    # --------------------
     # http://stackoverflow.com/questions/13610074/
     #   is-there-a-rule-of-thumb-for-how-to-divide-a-dataset-into-
     #   training-and-validatio
     #
     # http://topepo.github.io/caret/splitting.html
+    #-------------------------------------------------------------------------
     trainIndex <- createDataPartition(complaintData$issue,
                                       p = .8,
                                       list = FALSE,
@@ -180,23 +326,112 @@ splitData <- function(analyticDataPath,
               row.names=FALSE)
 }
 
-computePercentMissingData <- function(complaintData) {
+loadAnalyticData <- function(dataPath,
+                             dataFile) {
+    #-------------------------------------------------------------------------
+    # Loads an "analytic data set" [1] (i.e. a data set that has been 
+    # prepared for analysis) into memory.
+    #
+    # Args:
+    #   dataPath: String that stores the analytic data set file path
+    #
+    #   dataFile: String that stores the analytic data set file name
+    #
+    # Returns:
+    #   analyticData: Data frame that stores training, validation, or
+    #                 test data
+    #
+    # [1] https://www.coursera.org/specialization/jhudatascience/1
+    #-------------------------------------------------------------------------
+    analyticData <- read.csv(file.path(dataPath, dataFile),
+                             header=TRUE)
+    
+    analyticData$companyid <- as.factor(as.character(analyticData$companyid))
+    
+    analyticData$datereceived <- as.Date(analyticData$datereceived)
+    
+    analyticData$datesenttocompany <- as.Date(analyticData$datesenttocompany)
+    
+    return(analyticData)
+}
+
+loadDataStatistics <- function(analyticDataPath) {
+    #-------------------------------------------------------------------------
+    # Loads an R data file that stores data statistics computed during 
+    # data cleaning into memory
+    #
+    # Args:
+    #   analyticDataPath: String that stores the analytic data folder path
+    #
+    # Returns:
+    #   dataStatistics: List that stores data statistics computed during 
+    #                   data cleaning into memory 
+    #-------------------------------------------------------------------------
+    load(file=file.path(analyticDataPath,
+                        "DataStatistics.RData"))
+    
+    return(dataStatistics)
+}
+
+computeDataStatistics <- function(complaintData) {
+    #-------------------------------------------------------------------------
+    # Computes the followng statistics:
+    # - percent of missing data for each Consumer Financial Protection Bureau
+    #   (CFPB) Consumer Complaint Database variable
+    # - total number of observations 
+    # - number of companies
+    # - number of unique consumer complaint issues
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint 
+    #                  Database
+    # Returns:
+    #   dataStatistics: List that stores the following statistics:
+    #                   - percent of missing data for each CFPB Consumer 
+    #                     Complaint Database variable
+    #                   - total number of observations
+    #                   - number of companies
+    #                   - number of unique consumer complaint issues
+    #-------------------------------------------------------------------------
     numberObservations <- nrow(complaintData)
-    percentMissingData <- list()
+    dataStatistics <- list()
  
     for (variable in colnames(complaintData)) {
         isVariableMissing <- findMissingObservations(variable,
                                                      complaintData)
         
-        percentMissingData[[variable]] <-
+        dataStatistics[[variable]] <-
             100 * (sum(isVariableMissing) / numberObservations)
     }
     
-    return(percentMissingData)
+    dataStatistics[["numberobservations"]] <- numberObservations
+
+    dataStatistics[["numbercompanies"]] <-
+        length(unique(complaintData$company))
+    
+    dataStatistics[["numberissues"]] <-
+        length(unique(complaintData$issue))
+    
+    return(dataStatistics)
 }
 
 findMissingObservations <- function(variable,
                                     complaintData) {
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that keeps track of whether or not
+    # the input variable is missing for each complaintData row
+    #
+    # Args:
+    #   variable: String that refers to a specific complaintData column
+    #
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isVariableMissing: logical vector that keeps track of whether or not
+    #                      the input variable is missing for each 
+    #                      complaintData row
+    #-------------------------------------------------------------------------
     variableClass <- class(complaintData[1,variable])
 
     if (variableClass == "integer") {
@@ -207,7 +442,7 @@ findMissingObservations <- function(variable,
     #----------------------------------------------------
     } else {
         warning(sprintf("Need to add %s variable class", variableClass))
-        
+
         isVariableMissing <- vector(mode="logical", nrow(complaintData))
     }
     
@@ -215,16 +450,34 @@ findMissingObservations <- function(variable,
 }
 
 initializeVariablesToAnalyze <- function(maximumPercentMissing,
-                                         percentMissingData,
+                                         dataStatistics,
                                          complaintData) {
+    #-------------------------------------------------------------------------
+    # Initializes a list that defines the rows and columns of the CFPB
+    # Comsumer Complaint Database to analyze.
+    #
+    # Args:
+    #   maximumPercentMissing: Defines the maximum allowable percentage of
+    #                          missing rows
+    #
+    #   dataStatistics: List that stores the following statistics:
+    #                   - percent of missing data for each CFPB Consumer 
+    #                     Complaint Database variable
+    #                   - total number of observations
+    #                   - number of companies
+    #                   - number of unique consumer complaint issues
+    #
+    # complaintData: Data frame that stores the CFPB Consumer Complaint
+    # Database
+    #-------------------------------------------------------------------------
     dataFrameSegmentation <- list()
     dataFrameSegmentation[["variables"]] <- vector()
 
     dataFrameSegmentation[["isValidRow"]] <-
         !vector(mode="logical", nrow(complaintData))
 
-    for (variable in names(percentMissingData)) {
-        if (percentMissingData[[variable]] <= maximumPercentMissing) {
+    for (variable in names(dataStatistics)) {
+        if (dataStatistics[[variable]] <= maximumPercentMissing) {
             dataFrameSegmentation[["variables"]] <-
                 append(dataFrameSegmentation[["variables"]], variable)
             
@@ -239,7 +492,103 @@ initializeVariablesToAnalyze <- function(maximumPercentMissing,
     return(dataFrameSegmentation)
 }
 
+initializeVariables <- function(dataStatistics) {
+    #-------------------------------------------------------------------------
+    # Returns a character vector that stores CFPB Consumer Complaint
+    # Database variable names.
+    #
+    # Args:
+    #   dataStatistics: List that stores the following statistics:
+    #                   - percent of missing data for each CFPB Consumer 
+    #                     Complaint Database variable
+    #                   - total number of observations
+    #                   - number of companies
+    #                   - number of unique consumer complaint issues
+    #
+    # Returns:
+    #   variables: character vector that stores CFPB Consumer Complaint
+    #              Database variable names.
+    #-------------------------------------------------------------------------
+    variables <- names(dataStatistics)
+    variables <- variables[!variables %in% c("numberobservations",
+                                             "othercategory",
+                                             "dataframejoin",
+                                             "numbercompanies",
+                                             "numberissues")]
+    
+    return(variables)
+}
+
+initializePercentMissingDataTable <- function(dataStatistics) {
+    #-------------------------------------------------------------------------
+    # Initializes a data frame that stores an estimate of the percent of
+    # missing data for each CFPB Consumer Complaint Database variable.
+    #
+    # Args:
+    #   dataStatistics: List that stores the following statistics:
+    #                   - percent of missing data for each CFPB Consumer 
+    #                     Complaint Database variable
+    #                   - total number of observations
+    #                   - number of companies
+    #                   - number of unique consumer complaint issues
+    #
+    # Returns:
+    #   tableData: Data frame that stores an estimate of the percent of
+    #              missing data for each CFPB Consumer Complaint Database 
+    #              variable.
+    #-------------------------------------------------------------------------
+    variables <- initializeVariables(dataStatistics)
+    
+    tableData <- data.frame()
+    
+    for (key in variables) {
+        tableData <-
+            rbind(tableData,
+                  data.frame(variable=key,
+                             percentmissing = 
+                                 round(dataStatistics[[key]],1)))
+    }
+    
+    # http://stackoverflow.com/questions/1296646/
+    #   how-to-sort-a-dataframe-by-columns-in-r
+    tableData <- tableData[with(tableData,order(-percentmissing)),]
+    
+    tableData$variable <- as.character(tableData$variable)
+    
+    rownames(tableData) <- NULL
+    colnames(tableData) <- c("Variable","% Missing")
+    
+    return(tableData)
+} 
+
 initializeIssueCategorySelection <- function(complaintData) {
+    #-------------------------------------------------------------------------
+    # Initializes a list that stores logical vectors that define which
+    # CFPB Consumer Complaint Database rows correspond to the following
+    # consumer complaint issue categories:
+    # - banking
+    # - communication
+    # - credit
+    # - customerservice
+    # - debtcollection
+    # - fee
+    # - financial crime
+    # - loan
+    # - mortgage
+    # - other
+    # - privacy
+    # - transaction
+    # - unauthorized transaction
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   categorySelection: List that stores logical vectors that define which
+    #                      CFPB Consumer Complaint Database rows correspond to 
+    #                      the each consumer complaint issue category
+    #-------------------------------------------------------------------------
     categorySelection <- list()
 
     categorySelection$Banking <-
@@ -285,7 +634,19 @@ initializeIssueCategorySelection <- function(complaintData) {
 }
 
 initializeBankingCategorySelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the banking complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isBankingIssue: Logical vector that defines which CFPB Consumer 
+    #                   Complaint Database rows correspond to the banking 
+    #                   complaint issue category
+    #-------------------------------------------------------------------------
     isBankingIssue <-
         grepl("^deposits and withdrawals$", complaintData$issue) |
         grepl("^convenience checks$", complaintData$issue) |
@@ -308,7 +669,19 @@ initializeBankingCategorySelection <- function(complaintData) {
 }
 
 initializeCommunicationIssueSelection <- function(complaintData) {
-    
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the communication complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isCommunicationIssue: Logical vector that defines which CFPB Consumer 
+    #                         Complaint Database rows correspond to the
+    #                         communication complaint issue category
+    #-------------------------------------------------------------------------    
     isCommunicationIssue <-
         grepl("^advertising marketing or disclosures$", complaintData$issue) |
         grepl("^taking threatening an illegal action$" , complaintData$issue) |
@@ -323,7 +696,19 @@ initializeCommunicationIssueSelection <- function(complaintData) {
 }
 
 initializeCreditIssueSelection <- function(complaintData) {
-    
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the credit complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isCreditIssue: Logical vector that defines which CFPB Consumer 
+    #                  Complaint Database rows correspond to the credit
+    #                  complaint issue category
+    #-------------------------------------------------------------------------
     isCreditIssue <-
         grepl("^incorrect information on credit report$",
               complaintData$issue) |
@@ -342,7 +727,19 @@ initializeCreditIssueSelection <- function(complaintData) {
 }
 
 initializeCustomerServiceIssueSelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the customer service complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isCustomerServiceIssue: Logical vector that defines which CFPB Consumer 
+    #                           Complaint Database rows correspond to the
+    #                           customer service complaint issue category
+    #-------------------------------------------------------------------------
     isCustomerServiceIssue <-
         grepl("^billing disputes$", complaintData$issue) |
         grepl("^arbitration$", complaintData$issue) |
@@ -354,7 +751,19 @@ initializeCustomerServiceIssueSelection <- function(complaintData) {
 }
 
 initializeDebtCollectionIssueSelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the debt collection complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isDebtCollectionIssue: Logical vector that defines which CFPB Consumer 
+    #                          Complaint Database rows correspond to the
+    #                          debt collection complaint issue category
+    #-------------------------------------------------------------------------
     isDebtCollectionIssue <-
         grepl("^contd attempts collect debt not owed$",
               complaintData$issue) |
@@ -376,7 +785,19 @@ initializeDebtCollectionIssueSelection <- function(complaintData) {
 }
 
 initializeFeeIssueSelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the fee complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isFeeIssue: Logical vector that defines which CFPB Consumer Complaint
+    #               Database rows correspond to the fee complaint issue
+    #               category
+    #-------------------------------------------------------------------------
     isFeeIssue <- 
         grepl("^cash advance fee$", complaintData$issue) |
         grepl("^other fee$", complaintData$issue) |
@@ -393,7 +814,19 @@ initializeFeeIssueSelection <- function(complaintData) {
 }
 
 initializeFinancialCrimeIssueSelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the financial crime complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isFinancialCrimeIssue: Logical vector that defines which CFPB Consumer 
+    #                          Complaint Database rows correspond to the
+    #                          financial crime complaint issue category
+    #-------------------------------------------------------------------------
     isFinancialCrimeIssue <- 
         grepl("^fraud or scam$", complaintData$issue) |
         grepl("^false statements or representation$", complaintData$issue) |
@@ -403,7 +836,19 @@ initializeFinancialCrimeIssueSelection <- function(complaintData) {
 }
 
 initializeLoanIssueSelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the loan complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isLoanIssue: Logical vector that defines which CFPB Consumer Complaint
+    #                Database rows correspond to the loan complaint issue
+    #                category
+    #-------------------------------------------------------------------------
     isLoanIssue <-
         grepl("^disclosure verification of debt$", complaintData$issue) |
         grepl("^money was not available when promised$",
@@ -425,7 +870,19 @@ initializeLoanIssueSelection <- function(complaintData) {
 }
   
 initializeMortgageIssueSelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the mortgage complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isMortgageIssue: Logical vector that defines which CFPB Consumer
+    #                    Complaint Database rows correspond to the mortgage
+    #                    complaint issue category
+    #-------------------------------------------------------------------------
     isMortgageIssue <-
         grepl("^loan servicing payments escrow account$",
               complaintData$issue) |
@@ -446,6 +903,19 @@ initializeMortgageIssueSelection <- function(complaintData) {
 }
 
 initializeOtherIssueSelection <- function(complaintData) {
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the other complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isOtherIssue: Logical vector that defines which CFPB Consumer Complaint
+    #                 Database rows correspond to the other complaint issue 
+    #                 category
+    #-------------------------------------------------------------------------
     isOtherIssue <- 
         grepl("^other$", complaintData$issue)
     
@@ -453,7 +923,19 @@ initializeOtherIssueSelection <- function(complaintData) {
 }
 
 initializePrivacyIssueSelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the privacy complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isPrivacyIssue: Logical vector that defines which CFPB Consumer
+    #                   Complaint Database rows correspond to the privacy
+    #                   complaint issue category
+    #-------------------------------------------------------------------------
     isPrivacyIssue <-
         grepl("^improper contact or sharing of info$", complaintData$issue) |
         grepl("^privacy$", complaintData$issue)
@@ -462,7 +944,19 @@ initializePrivacyIssueSelection <- function(complaintData) {
 }
   
 initiaizeTransationIssueSelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the transaction complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isTransactionIssue: Logical vector that defines which CFPB Consumer
+    #                       Complaint Database rows correspond to the
+    #                       transaction complaint issue category
+    #-------------------------------------------------------------------------
     isTransactionIssue <- 
         grepl("^wrong amount charged or received$", complaintData$issue) |
         grepl("^making receiving payments sending money$",
@@ -476,7 +970,21 @@ initiaizeTransationIssueSelection <- function(complaintData) {
 }
 
 initializeUnauthorizedTransactionIssueSelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the unauthorized transaction complaint issue
+    # category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isUnauthorizedTransactionIssue: Logical vector that defines which CFPB
+    #                                   Consumer Complaint Database rows
+    #                                   correspond to the unauthorized 
+    #                                   transaction complaint issue category
+    #-------------------------------------------------------------------------
     isUnauthorizedTransactionIssue <-
         grepl("^unsolicited issuance of credit card$", complaintData$issue) |
         grepl("^unauthorized transactions trans issues$",
@@ -488,6 +996,22 @@ initializeUnauthorizedTransactionIssueSelection <- function(complaintData) {
 
 findUncategorizedIssues <- function(categorySelection,
                                     complaintData) {
+    #-------------------------------------------------------------------------
+    # Returns a character vector that stores uncategorized consumer complaint
+    # issues
+    #
+    # Args:
+    #   categorySelection: List that stores logical vectors that define which
+    #                      CFPB Consumer Complaint Database rows correspond to 
+    #                      the each consumer complaint issue category
+    #
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   uncategorizedIssues: character vector that stores uncategorized 
+    #                        consumer complaint issues 
+    #-------------------------------------------------------------------------
     isUncategorized <- vector(mode="logical", nrow(complaintData))
 
     for (key in names(categorySelection)) {
