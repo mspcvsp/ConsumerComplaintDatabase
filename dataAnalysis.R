@@ -10,7 +10,8 @@ initializeSummaryIssueCategoryPercentage <- function(complaintData) {
     # percentage
     #
     # Args:
-    #   complaintData: CFPB Consumer Complaint Database
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
     #
     # Returns:
     #   summaryTableData: Data frame that stores the estimated issue category
