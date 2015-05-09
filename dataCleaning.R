@@ -493,6 +493,22 @@ initializeVariablesToAnalyze <- function(maximumPercentMissing,
 }
 
 initializeVariables <- function(dataStatistics) {
+    #-------------------------------------------------------------------------
+    # Returns a character vector that stores CFPB Consumer Complaint
+    # Database variable names.
+    #
+    # Args:
+    #   dataStatistics: List that stores the following statistics:
+    #                   - percent of missing data for each CFPB Consumer 
+    #                     Complaint Database variable
+    #                   - total number of observations
+    #                   - number of companies
+    #                   - number of unique consumer complaint issues
+    #
+    # Returns:
+    #   variables: character vector that stores CFPB Consumer Complaint
+    #              Database variable names.
+    #-------------------------------------------------------------------------
     variables <- names(dataStatistics)
     variables <- variables[!variables %in% c("numberobservations",
                                              "othercategory",
@@ -504,6 +520,23 @@ initializeVariables <- function(dataStatistics) {
 }
 
 initializePercentMissingDataTable <- function(dataStatistics) {
+    #-------------------------------------------------------------------------
+    # Initializes a data frame that stores an estimate of the percent of
+    # missing data for each CFPB Consumer Complaint Database variable.
+    #
+    # Args:
+    #   dataStatistics: List that stores the following statistics:
+    #                   - percent of missing data for each CFPB Consumer 
+    #                     Complaint Database variable
+    #                   - total number of observations
+    #                   - number of companies
+    #                   - number of unique consumer complaint issues
+    #
+    # Returns:
+    #   tableData: Data frame that stores an estimate of the percent of
+    #              missing data for each CFPB Consumer Complaint Database 
+    #              variable.
+    #-------------------------------------------------------------------------
     variables <- initializeVariables(dataStatistics)
     
     tableData <- data.frame()
@@ -525,10 +558,37 @@ initializePercentMissingDataTable <- function(dataStatistics) {
     rownames(tableData) <- NULL
     colnames(tableData) <- c("Variable","% Missing")
     
-    return(tableData)    
+    return(tableData)
 } 
 
 initializeIssueCategorySelection <- function(complaintData) {
+    #-------------------------------------------------------------------------
+    # Initializes a list that stores logical vectors that define which
+    # CFPB Consumer Complaint Database rows correspond to the following
+    # consumer complaint issue categories:
+    # - banking
+    # - communication
+    # - credit
+    # - customerservice
+    # - debtcollection
+    # - fee
+    # - financial crime
+    # - loan
+    # - mortgage
+    # - other
+    # - privacy
+    # - transaction
+    # - unauthorized transaction
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   categorySelection: List that stores logical vectors that define which
+    #                      CFPB Consumer Complaint Database rows correspond to 
+    #                      the each consumer complaint issue category
+    #-------------------------------------------------------------------------
     categorySelection <- list()
 
     categorySelection$Banking <-
@@ -574,7 +634,19 @@ initializeIssueCategorySelection <- function(complaintData) {
 }
 
 initializeBankingCategorySelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the banking complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isBankingIssue: Logical vector that defines which CFPB Consumer 
+    #                   Complaint Database rows correspond to the banking 
+    #                   complaint issue category
+    #-------------------------------------------------------------------------
     isBankingIssue <-
         grepl("^deposits and withdrawals$", complaintData$issue) |
         grepl("^convenience checks$", complaintData$issue) |
@@ -597,7 +669,19 @@ initializeBankingCategorySelection <- function(complaintData) {
 }
 
 initializeCommunicationIssueSelection <- function(complaintData) {
-    
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the communication complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isCommunicationIssue: Logical vector that defines which CFPB Consumer 
+    #                         Complaint Database rows correspond to the
+    #                         communication complaint issue category
+    #-------------------------------------------------------------------------    
     isCommunicationIssue <-
         grepl("^advertising marketing or disclosures$", complaintData$issue) |
         grepl("^taking threatening an illegal action$" , complaintData$issue) |
@@ -612,7 +696,19 @@ initializeCommunicationIssueSelection <- function(complaintData) {
 }
 
 initializeCreditIssueSelection <- function(complaintData) {
-    
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the credit complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isCreditIssue: Logical vector that defines which CFPB Consumer 
+    #                  Complaint Database rows correspond to the credit
+    #                  complaint issue category
+    #-------------------------------------------------------------------------
     isCreditIssue <-
         grepl("^incorrect information on credit report$",
               complaintData$issue) |
@@ -631,7 +727,19 @@ initializeCreditIssueSelection <- function(complaintData) {
 }
 
 initializeCustomerServiceIssueSelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the customer service complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isCustomerServiceIssue: Logical vector that defines which CFPB Consumer 
+    #                           Complaint Database rows correspond to the
+    #                           customer service complaint issue category
+    #-------------------------------------------------------------------------
     isCustomerServiceIssue <-
         grepl("^billing disputes$", complaintData$issue) |
         grepl("^arbitration$", complaintData$issue) |
@@ -643,7 +751,19 @@ initializeCustomerServiceIssueSelection <- function(complaintData) {
 }
 
 initializeDebtCollectionIssueSelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the debt collection complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isDebtCollectionIssue: Logical vector that defines which CFPB Consumer 
+    #                          Complaint Database rows correspond to the
+    #                          debt collection complaint issue category
+    #-------------------------------------------------------------------------
     isDebtCollectionIssue <-
         grepl("^contd attempts collect debt not owed$",
               complaintData$issue) |
@@ -665,7 +785,19 @@ initializeDebtCollectionIssueSelection <- function(complaintData) {
 }
 
 initializeFeeIssueSelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the fee complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isFeeIssue: Logical vector that defines which CFPB Consumer Complaint
+    #               Database rows correspond to the fee complaint issue
+    #               category
+    #-------------------------------------------------------------------------
     isFeeIssue <- 
         grepl("^cash advance fee$", complaintData$issue) |
         grepl("^other fee$", complaintData$issue) |
@@ -682,7 +814,19 @@ initializeFeeIssueSelection <- function(complaintData) {
 }
 
 initializeFinancialCrimeIssueSelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the financial crime complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isFinancialCrimeIssue: Logical vector that defines which CFPB Consumer 
+    #                          Complaint Database rows correspond to the
+    #                          financial crime complaint issue category
+    #-------------------------------------------------------------------------
     isFinancialCrimeIssue <- 
         grepl("^fraud or scam$", complaintData$issue) |
         grepl("^false statements or representation$", complaintData$issue) |
@@ -692,7 +836,19 @@ initializeFinancialCrimeIssueSelection <- function(complaintData) {
 }
 
 initializeLoanIssueSelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the loan complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isLoanIssue: Logical vector that defines which CFPB Consumer Complaint
+    #                Database rows correspond to the loan complaint issue
+    #                category
+    #-------------------------------------------------------------------------
     isLoanIssue <-
         grepl("^disclosure verification of debt$", complaintData$issue) |
         grepl("^money was not available when promised$",
@@ -714,7 +870,19 @@ initializeLoanIssueSelection <- function(complaintData) {
 }
   
 initializeMortgageIssueSelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the mortgage complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isMortgageIssue: Logical vector that defines which CFPB Consumer
+    #                    Complaint Database rows correspond to the mortgage
+    #                    complaint issue category
+    #-------------------------------------------------------------------------
     isMortgageIssue <-
         grepl("^loan servicing payments escrow account$",
               complaintData$issue) |
@@ -735,6 +903,19 @@ initializeMortgageIssueSelection <- function(complaintData) {
 }
 
 initializeOtherIssueSelection <- function(complaintData) {
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the other complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isOtherIssue: Logical vector that defines which CFPB Consumer Complaint
+    #                 Database rows correspond to the other complaint issue 
+    #                 category
+    #-------------------------------------------------------------------------
     isOtherIssue <- 
         grepl("^other$", complaintData$issue)
     
@@ -742,7 +923,19 @@ initializeOtherIssueSelection <- function(complaintData) {
 }
 
 initializePrivacyIssueSelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the privacy complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isPrivacyIssue: Logical vector that defines which CFPB Consumer
+    #                   Complaint Database rows correspond to the privacy
+    #                   complaint issue category
+    #-------------------------------------------------------------------------
     isPrivacyIssue <-
         grepl("^improper contact or sharing of info$", complaintData$issue) |
         grepl("^privacy$", complaintData$issue)
@@ -751,7 +944,19 @@ initializePrivacyIssueSelection <- function(complaintData) {
 }
   
 initiaizeTransationIssueSelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the transaction complaint issue category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isTransactionIssue: Logical vector that defines which CFPB Consumer
+    #                       Complaint Database rows correspond to the
+    #                       transaction complaint issue category
+    #-------------------------------------------------------------------------
     isTransactionIssue <- 
         grepl("^wrong amount charged or received$", complaintData$issue) |
         grepl("^making receiving payments sending money$",
@@ -765,7 +970,21 @@ initiaizeTransationIssueSelection <- function(complaintData) {
 }
 
 initializeUnauthorizedTransactionIssueSelection <- function(complaintData) {
-
+    #-------------------------------------------------------------------------
+    # Initializes a logical vector that defines which CFPB Consumer Complaint 
+    # Database rows correspond to the unauthorized transaction complaint issue
+    # category
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   isUnauthorizedTransactionIssue: Logical vector that defines which CFPB
+    #                                   Consumer Complaint Database rows
+    #                                   correspond to the unauthorized 
+    #                                   transaction complaint issue category
+    #-------------------------------------------------------------------------
     isUnauthorizedTransactionIssue <-
         grepl("^unsolicited issuance of credit card$", complaintData$issue) |
         grepl("^unauthorized transactions trans issues$",
@@ -778,7 +997,21 @@ initializeUnauthorizedTransactionIssueSelection <- function(complaintData) {
 findUncategorizedIssues <- function(categorySelection,
                                     complaintData) {
     #-------------------------------------------------------------------------
-    # 
+    # Returns a character vector that stores uncategorized consumer complaint
+    # issues
+    #
+    # Args:
+    #   categorySelection: List that stores logical vectors that define which
+    #                      CFPB Consumer Complaint Database rows correspond to 
+    #                      the each consumer complaint issue category
+    #
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   uncategorizedIssues: character vector that stores uncategorized 
+    #                        consumer complaint issues 
+    #-------------------------------------------------------------------------
     isUncategorized <- vector(mode="logical", nrow(complaintData))
 
     for (key in names(categorySelection)) {
