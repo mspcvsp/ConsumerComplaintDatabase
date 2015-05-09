@@ -154,20 +154,12 @@ initializeZipCodeIssueCategoryPercentage <- function(complaintData,
     categoryPercentage <- data.frame()
 
     for (state in stateList) {
-        print(sprintf("Estimating the issue category percentage for %s",
-                      state))
-
         stateData <- complaintData[which(complaintData$state == state),]
         
         zipCodes <- unique(stateData$zipcode)
         numberZipCodes <- length(zipCodes)
 
         for (index in seq_len(numberZipCodes)) {
-            if ((index-1) %% 100 == 0) {
-                print(sprintf("\tProcessing zipcode #%d (Out of %d)", index,
-                              numberZipCodes))            
-            }
-            
             zipCodeData <- complaintData[which(complaintData$zipcode == 
                                                zipCodes[index]),]
             

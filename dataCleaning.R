@@ -8,6 +8,7 @@ library(data.table)
 library(ggmap)
 library(lubridate)
 library(zipcode)
+library(choroplethrMaps)
 
 data(state.regions)
 
@@ -325,15 +326,16 @@ splitData <- function(analyticDataPath,
               row.names=FALSE)
 }
 
-loadAnalyticData <- function(analyticDataFile) {
+loadAnalyticData <- function(dataPath,
+                             dataFile) {
     #-------------------------------------------------------------------------
     # Loads an "analytic data set" [1] (i.e. a data set that has been 
     # prepared for analysis) into memory.
     #
     # Args:
-    #   analyticDataPath: String that stores the analytic data set file path
+    #   dataPath: String that stores the analytic data set file path
     #
-    #   analyticDataFile: String that stores the analytic data set file name
+    #   dataFile: String that stores the analytic data set file name
     #
     # Returns:
     #   analyticData: Data frame that stores training, validation, or
@@ -341,8 +343,7 @@ loadAnalyticData <- function(analyticDataFile) {
     #
     # [1] https://www.coursera.org/specialization/jhudatascience/1
     #-------------------------------------------------------------------------
-    analyticData <- read.csv(file.path(analyticDataPath,
-                                       analyticDataFile),
+    analyticData <- read.csv(file.path(dataPath, dataFile),
                              header=TRUE)
     
     analyticData$companyid <- as.factor(as.character(analyticData$companyid))
@@ -441,7 +442,7 @@ findMissingObservations <- function(variable,
     #----------------------------------------------------
     } else {
         warning(sprintf("Need to add %s variable class", variableClass))
-        
+
         isVariableMissing <- vector(mode="logical", nrow(complaintData))
     }
     
@@ -451,6 +452,24 @@ findMissingObservations <- function(variable,
 initializeVariablesToAnalyze <- function(maximumPercentMissing,
                                          dataStatistics,
                                          complaintData) {
+    #-------------------------------------------------------------------------
+    # Initializes a list that defines the rows and columns of the CFPB
+    # Comsumer Complaint Database to analyze.
+    #
+    # Args:
+    #   maximumPercentMissing: Defines the maximum allowable percentage of
+    #                          missing rows
+    #
+    #   dataStatistics: List that stores the following statistics:
+    #                   - percent of missing data for each CFPB Consumer 
+    #                     Complaint Database variable
+    #                   - total number of observations
+    #                   - number of companies
+    #                   - number of unique consumer complaint issues
+    #
+    # complaintData: Data frame that stores the CFPB Consumer Complaint
+    # Database
+    #-------------------------------------------------------------------------
     dataFrameSegmentation <- list()
     dataFrameSegmentation[["variables"]] <- vector()
 

@@ -393,9 +393,10 @@ for analysis
     * [Choropleth](http://blog.crisis.net/choropleth-maps-with-d3/)
     * [Geospatial data visualization]([ggmap package](http://journal.r-project.org/archive/2013-1/kahle-wickhampdf))
 - Exploratory data analysis results suggest  
-    * Significant geospatial and temporal variation  
+    * Significant consumer complaint issue category geospatial and temporal 
+    variation     
     * The number of complaints for most companies is relatively low  
 - Potential directions for future analysis  
-    * Investigate the stability of zipcode level statistics  
+    * Investigate the stability of zipcode level statistics for each U.S. state  
     * Evaluate the dependency of the complaint issue category variable on the
     the timelyresponse, consumerdisputed, and companyresponse variables   
