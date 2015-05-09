@@ -74,11 +74,11 @@ percentDataRemoved <-
           dbDataStatistics$numberobservations,1)
 ```
 - Transform the variable names to lower case  
-- Remove '.' from variable names  
+- Remove periods from variable names  
 - Exclude data from U.S. territories  
 - Apply a maximum percent missing threshold to remove partial observations  
 - Remove whitespace from the company type  
-- For each database variable:  
+- For each database character variable value:  
     * Transform to lower case  
     * Remove punctuation  
     * Replace multiple spaces with a single space  
@@ -87,7 +87,6 @@ percentDataRemoved <-
 - Remove white space from the company type  
 - Aggregate the `r dbDataStatistics$numberissues` complaint issues into 
 `r length(levels(trainingData$issuecategory))` categories  
-- Remove the "other" category  
 - Append city, state, latitude, & longitude from the [zipcode R package](https://jeffreybreen.wordpress.com/2011/01/05/cran-zipcode/)  
 - Add a companyid variable  
 - Convert date variables  
@@ -386,11 +385,11 @@ print(xtable(companyidComplaintPercentage),
 ![Consumer Complaint Counts](./figures/companyidComplaintCount.png)
 
 ## Conclusion
-- Introduced a procedure for preparing the - [Consumer Financial Protection Bureau (CFPB)](http://www.consumerfinance.gov/) [Consumer Complaint Database](https://catalog.data.gov/dataset/consumer-complaint-database)
+- Introduced a procedure for preparing the [Consumer Financial Protection Bureau (CFPB)](http://www.consumerfinance.gov/) [Consumer Complaint Database](https://catalog.data.gov/dataset/consumer-complaint-database)
 for analysis  
 - Illustrated the following types of exploratory data analysis plots
     * [Choropleth](http://blog.crisis.net/choropleth-maps-with-d3/)
-    * [Geospatial data visualization]([ggmap package](http://journal.r-project.org/archive/2013-1/kahle-wickhampdf))
+    * [Geospatial data visualization](http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf)    
 - Exploratory data analysis results suggest  
     * Significant consumer complaint issue category geospatial and temporal 
     variation     

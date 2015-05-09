@@ -100,27 +100,25 @@ cleanComplaintData <- function(csvFilePath,
     # 4.) Apply a maximum percent missing threshold to remove partial 
     #     observations
     #
-    # 5.) Remove whitespace from the company type
-    #
-    # 6.) For each database variable:
+    # 5.) For each database variable:
     #     a.) Transform to lower case
     #     b.) Remove apostrophe (e.g. change cont'd to contd)
     #     c.) Remove punctuation
     #     d.) Replace multiple spaces with a single space
     #
-    # 7.) Remove white space from the company type
+    # 6.) Remove white space from the company type
     #
-    # 8.) Aggregate the complaint issues into categories
+    # 7.) Aggregate the complaint issues into categories
     #
-    # 9.) Remove the "other" category
+    # 8.) Remove the "other" category
     #
-    # 10.) Append city, state, latitude, & lognitude
+    # 9.) Append city, state, latitude, & lognitude
     #
-    # 11.) Add a companyid variable
+    # 10.) Add a companyid variable
     #
-    # 12.) Convert date variables
+    # 11.) Convert date variables
     #
-    # 13.) Convert factor variables
+    # 12.) Convert factor variables
     #
     # Args:
     #   csvFilePath: String that stores the CPFB Consumer Complaint Database
