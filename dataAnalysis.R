@@ -5,6 +5,17 @@ library(data.table)
 data(state.regions)
 
 initializeSummaryIssueCategoryPercentage <- function(complaintData) {
+    #-------------------------------------------------------------------------
+    # Initializes a data frame that stores the estimated issue category
+    # percentage
+    #
+    # Args:
+    #   complaintData: CFPB Consumer Complaint Database
+    #
+    # Returns:
+    #   summaryTableData: Data frame that stores the estimated issue category
+    #                     percentage   
+    #-------------------------------------------------------------------------
     summaryTableData <- table(complaintData$issuecategory)
     
     summaryTableData <- round(data.frame(sort(100 * summaryTableData / 
@@ -24,6 +35,18 @@ initializeSummaryIssueCategoryPercentage <- function(complaintData) {
 }
 
 computeStateIssueCategoryPercentage <- function(complaintData) {
+    #-------------------------------------------------------------------------
+    # Initializes a data frame that stores the estimated issue category
+    # percentages for each U.S. state
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   issueCategoryPercentage: Data frame that stores the estimated issue
+    #                            category percentages for each U.S. state
+    #-------------------------------------------------------------------------
     issueCategoryPercentage <- data.frame()
     
     for (stateAbb in unique(complaintData$state)) {
@@ -56,6 +79,18 @@ computeStateIssueCategoryPercentage <- function(complaintData) {
 }
 
 computeStateSubmittedViaPercentage <- function(complaintData) {
+    #-------------------------------------------------------------------------
+    # Initializes a data frame that stores the estimated submitted via
+    # percentage for each U.S. state.
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   submittedViaPercentage: Data frame that stores the estimated submitted
+    #                           via percentage for each U.S. state.
+    #-------------------------------------------------------------------------
     submittedViaPercentage <- data.frame()
     
     for (stateAbb in unique(complaintData$state)) {
@@ -91,6 +126,28 @@ computeStateSubmittedViaPercentage <- function(complaintData) {
 initializePercentIssue <- function(issuecategory,
                                    stateIssueCategoryPercentage,
                                    state.regions) {
+    #-------------------------------------------------------------------------
+    # Returns a data frame that stores the estimated consumer complaint issue 
+    # category percentage for each U.S. state
+    #
+    # Args:
+    #   issuecategory: String that refers to a specific consumer complaint
+    #                  issue category
+    #
+    #   stateIssueCategoryPercentage: Data frame that stores the estimated
+    #                                 issue category percentages for each U.S. 
+    #                                 state
+    #
+    #   state.regions: Data frame that contains the following variables:
+    #                  - region
+    #                  - abb (State abbreviation)
+    #                  - fips.numeric
+    #                  - fips.character
+    #
+    # Returns:
+    #   issueCategoryPercentage: The estimated consumer complaint issue 
+    #                            category percentage for each U.S. state
+    #-------------------------------------------------------------------------
     issueCategoryRows <-
         which(stateIssueCategoryPercentage$issuecateogry == issuecategory)
     
@@ -113,6 +170,18 @@ initializePercentIssue <- function(issuecategory,
 }
 
 initializeSummaryPercentSubmittedVia <- function(complaintData) {
+    #-------------------------------------------------------------------------
+    # Initializes a data frame that stores the estimated percentage of
+    # submitted via.
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    # Returns:
+    #   tableData: Data frame that stores the estimated percentage of
+    #              submitted via.
+    #-------------------------------------------------------------------------
     tableData <- sort(table(complaintData$submittedvia),
                             decreasing =TRUE)
     
@@ -128,6 +197,27 @@ initializeSummaryPercentSubmittedVia <- function(complaintData) {
 initializePercentSubmittedVia <- function(submittedvia,
                                           stateSubmittedViaPercentage,
                                           state.regions) {
+    #-------------------------------------------------------------------------
+    # Initializes a data frame that stores the percentage of a specific 
+    # submitted via case for each U.S. state
+    #
+    # Args:
+    #   submittedvia: String that refers to a specific submitted via case
+    #
+    #   submittedViaPercentage: Data frame that stores the estimated submitted
+    #                           via percentage for each U.S. state.
+    #
+    #   state.regions: Data frame that contains the following variables:
+    #                  - region
+    #                  - abb (State abbreviation)
+    #                  - fips.numeric
+    #                  - fips.character
+    #
+    # Returns:
+    #   submittedViaPercentage: Data frame that stores the percentage of a
+    #                           specific submitted via case for each U.S.
+    #                           state
+    #-------------------------------------------------------------------------
     submittedViaRows <-
         which(stateSubmittedViaPercentage$submittedvia == submittedvia)
     
@@ -151,6 +241,20 @@ initializePercentSubmittedVia <- function(submittedvia,
 
 initializeZipCodeIssueCategoryPercentage <- function(complaintData,
                                                      stateList) {
+    #-------------------------------------------------------------------------
+    # Initializes a data frame that stores the issue category percentage 
+    # zipcode level statistics
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint 
+    #                  Database
+    #
+    #   stateList: Character vector that stores a list of U.S. states
+    #
+    # Returns:
+    #   categoryPercentage: Data frame that stores the issue category
+    #                       percentage zipcode level statistics
+    #-------------------------------------------------------------------------
     categoryPercentage <- data.frame()
 
     for (state in stateList) {
@@ -193,6 +297,20 @@ initializeZipCodeIssueCategoryPercentage <- function(complaintData,
 
 estimateTopFiveStateIssueCategories <- function(complaintData,
                                                 stateAbbreviation) {
+    #-------------------------------------------------------------------------
+    # Estimates the top-five state-level consumer complaint issue categories
+    #
+    # Args:
+    #   complaintData: Data frame that stores the CFPB Consumer Complaint
+    #                  Database
+    #
+    #   stateAbbreviation: String that refers to a specific U.S. state
+    #
+    # Returns:
+    #   stateIssueCategoryPercentage: Data frame that stores the estimated
+    #                                 top-five state-level consumer complaint
+    #                                 issue categories
+    #-------------------------------------------------------------------------
     stateIssueCategoryPercentage <- 
         initializeZipCodeIssueCategoryPercentage(complaintData,
                                                  c(stateAbbreviation))
