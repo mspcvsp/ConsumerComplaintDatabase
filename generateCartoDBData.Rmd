@@ -118,3 +118,14 @@ for (categoryIdx in seq_len(length(issueCategories))) {
         colnames(cartoDBData) <- sub("^([a-z]+)\\.x","\\1",variables)
     }
 }
+
+variables <- colnames(cartoDBData)
+for (percentageVariable in variables[grepl("^[a-z]+percentage$",
+                                           variables)]) {
+    naRows <- which(is.na(cartoDBData[,percentageVariable]))
+    cartoDBData[naRows,percentageVariable] <- 0.0
+}
+
+write.csv(cartoDBData,
+          file.path(analyticDataPath,"percentageData.csv"),
+          row.names=FALSE)
