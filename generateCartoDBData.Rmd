@@ -1,0 +1,127 @@
+---
+title: "Generate CartoDB Data"
+output: html_document
+---
+
+```{r loadData}
+source("./dataCleaning.R")
+source("./dataAnalysis.R")
+set.seed(58978160)
+
+dataDirectory <- "./Data"
+analyticDataPath <- "./AnalyticData"
+maximumPercentMissing <- 10.0
+
+if (is.na(file.info(dataDirectory)[1,"isdir"])) {
+    downloadData(dataDirectory)
+}
+
+if (is.na(file.info(file.path(analyticDataPath,
+                              "/trainingData.csv"))[1,"size"])) {
+    createAnalyticDataset(dataDirectory,
+                          maximumPercentMissing,
+                          analyticDataPath)
+}
+```
+
+```{r createCartoDBData, echo=FALSE}
+library(data.table)
+
+zipCodeStatisticsFile <- file.path(analyticDataPath,
+                                   "zipCodeLevelStatistics.RData")
+
+if (is.na(file.info(zipCodeStatisticsFile)[1,"size"])) {
+    trainingData <- loadAnalyticData(analyticDataPath,
+                                     "trainingData.csv")
+
+    summaryIssueCategoryPercentage <-
+        initializeSummaryIssueCategoryPercentage(trainingData)
+
+    issueCategories <- summaryIssueCategoryPercentage[1:5,
+                                                      c("issuecategory")]
+
+    rowsToSelect <- vector()
+    for (curIssueCategory in issueCategories) {
+        rowsToSelect <- append(rowsToSelect,
+                               which(trainingData$issuecategory ==
+                                     curIssueCategory))
+    }
+    rowsToSelect <- sort(rowsToSelect)
+
+    segmentedData <- trainingData[rowsToSelect,]
+
+    segmentedData$issuecategory <-
+        as.factor(as.character(segmentedData$issuecategory))
+
+    stateAbbreviation <- unique(segmentedData$state)
+
+    zipCodeIssueCategoryPercentage <- 
+        initializeZipCodeIssueCategoryPercentage(segmentedData,
+                                                 stateAbbreviation)
+
+    save(list=c('zipCodeIssueCategoryPercentage',
+                'issueCategories'), file=zipCodeStatisticsFile)
+#-------------------------------------------------------------
+} else {
+    load(file=zipCodeStatisticsFile)
+}
+
+for (curIssueCategory in issueCategories) {
+    curIssueCategoryRows <-
+        which(zipCodeIssueCategoryPercentage$issuecateogry ==
+              curIssueCategory)
+
+    curPercentageData <- 
+        zipCodeIssueCategoryPercentage[curIssueCategoryRows,]
+
+    variableNames <- colnames(curPercentageData)
+    
+    variableNames <- gsub("percentage",
+                          paste0(curIssueCategory,"percentage"),
+                          variableNames)
+    
+    colnames(curPercentageData) <- variableNames
+
+    curPercentageData <-
+        curPercentageData[,variableNames[!grepl("^issuecateogry$",
+                                                variableNames)]]
+    
+    curPercentageData <- data.table(curPercentageData)
+    setkey(curPercentageData, zipcode)
+
+    # http://stackoverflow.com/questions/2232699/
+    #   how-to-do-a-data-table-merge-operation
+    if (nrow(cartoDBData) == 0) {
+        cartoDBData <- curPercentageData
+    #--------------------------------------------------
+    } else {
+        cartoDBData <- as.data.frame(cartoDBData[curPercentageData])
+        partialRows <- which(is.na(cartoDBData))
+        
+        if (length(partialRows) > 0) {
+            # R/W direction changes
+            if (is.na(cartoDBData[partialRows[1],'city'])) {
+                readVariablesRegex <- "^i\\.[a-z]+$" 
+            } else {
+                readVariablesRegex <- "^?!i\\.[a-z]+$" 
+            }
+            
+            variables <- colnames(cartoDBData)
+            variableCopyRegex <- 
+            variablesToCopy <- variables[grepl(variableCopyRegex,variables)]
+            
+            for (readVariable in variablesToCopy) {
+                writeVariable <- gsub("i\\.","",readVariable)
+                
+                cartoDBData[partialRows,writeVariable] <-
+                    cartoDBData[partialRows,readVariable]
+            }
+            
+            cartoDBData <- cartoDBData[,variables[!grepl(variableCopyRegex,
+                                                         variables)]]
+            
+            cartoDBData <- data.table(cartoDBData)
+            setkey(cartoDBData, zipcode)
+        }
+    }
+}

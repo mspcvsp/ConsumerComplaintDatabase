@@ -259,6 +259,8 @@ initializeZipCodeIssueCategoryPercentage <- function(complaintData,
     categoryPercentage <- data.frame()
 
     for (state in stateList) {
+        print(sprintf("Estimating the zipcode statistics for %s", state))
+        
         stateData <- complaintData[which(complaintData$state == state),]
         
         zipCodes <- unique(stateData$zipcode)
@@ -350,3 +352,4 @@ estimateTopFiveStateIssueCategories <- function(complaintData,
     
     return(stateIssueCategoryPercentage)
 }
+
